@@ -219,7 +219,7 @@ and have its `connectedCallback()` method called.
 > three "foo", "bar", and "baz" behaviors because the new `has` attribute is
 > `has="click-loger"`.
 
-### Element.behaviors (TODO)
+### Element.behaviors (WIP)
 
 To make it easier to add and remove behaviors, there will be an API similar to
 [`Element.classList`](https://developer.mozilla.org/en-US/docs/Web/API/Element/classList),
@@ -247,7 +247,82 @@ elementBehaviors.of(el).add('click-logger')
 elementBehaviors.of(el).remove('baz')
 ```
 
-If you have any thoughts, please [let me know](https://github.com/trusktr/element-behaviors/issues/1)!
+I currently have this add/remove functionality implemented
+[here](https://github.com/trusktr/infamous/blob/v18.0.10/src/html/behaviors/DefaultBehaviors.js),
+as part of Infamous, but this is not standlone yet.
+
+If you have any thoughts on this API, please [let me
+know](https://github.com/trusktr/element-behaviors/issues/1)!
+
+### Default behaviors (WIP)
+
+I'm not sure if this should be included here. Maybe it should end up in a
+separate library built on top of element-behaviors, but I'm placing the idea here, for now.
+
+The
+[DefaultBehaviorsMixin](https://github.com/trusktr/infamous/blob/v18.0.10/src/html/behaviors/DefaultBehaviors.js)
+of Infamous gives Custom Element classes the ability to define which behaviors
+they ship with by default, which is super useful!
+
+To define a Custom Element with default behaviors, it is done similarly to `observedAttributes`:
+
+```js
+class SomeElement extends DefaultBehaviorsMixin(HTMLElement) {
+
+    // If you know how to define observed attributes on your Custom Element,
+    static get observedAttributes() {
+        return ['some-attribute', 'other-attribute']
+    }
+
+    // then you can basically do the same to define default behaviors:
+    static get defaultBehaviors() {
+        return ['some-behavior', 'click-logger']
+    }
+
+}
+```
+
+Additionally, `defaultBehaviors` can return an object whose key names are
+behavior names, and whose values are functions that return true or false to
+determine if a default behavior should be initially added to the element or
+not. The function will receive the element, as well as intial behaviors that
+the element already has defined by the `has=""` attribute when the element is
+created.
+
+For example, suppose we have the following HTML:
+
+```html
+<my-div has="another-behavior"></my-div>
+<my-div has="some-behavior"></my-div>
+```
+
+and we define a Custom Element like:
+
+```js
+class SomeElement extends DefaultBehaviorsMixin(HTMLElement) {
+
+    static get defaultBehaviors() {
+        return {
+            'click-logger': (element, initialBehaviors) => {
+                if ( initialBehaviors.includes('another-behavior') ) {
+                    return false
+                }
+                return true
+            },
+        }
+    }
+
+}
+```
+
+then when the `my-div` elements are created, only the one without the
+`another-behavior` will have `click-logger` added to it, so the resulting DOM
+will be as follows:
+
+```html
+<my-div has="another-behavior"></my-div>
+<my-div has="some-behavior click-logger"></my-div>
+```
 
 Note
 ----
