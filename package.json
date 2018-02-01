@@ -1,0 +1,27 @@
+{
+  "name": "element-behaviors",
+  "description": "An entity-component system for HTML elements.",
+  "version": "0.0.0",
+  "main": "src/index.js",
+  "homepage": "https://github.com/trusktr/element-behaviors",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:trusktr/element-behaviors.git"
+  },
+  "bugs": {
+    "url": "https://github.com/trusktr/element-behaviors/issues"
+  },
+  "keywords": [
+    "dom",
+    "web-development",
+    "web-components",
+    "component-entity",
+    "entity-component",
+    "entity-component-system",
+    "ecs",
+    "webdev"
+  ],
+  "dependencies": {
+    "custom-attributes": "github:trusktr/custom-attributes#patch-1"
+  }
+}
