@@ -119,7 +119,7 @@ class HasAttribute {
             // document, not if it merely has a parent (the naive easy way for
             // now).
             if ( this.ownerElement.parentNode ) {
-                behavior.disconnectedCallback( this.ownerElement )
+                behavior.disconnectedCallback()
             }
 
             // We can't rely on checking observedAttributes here because that
@@ -144,7 +144,7 @@ class HasAttribute {
             // document, not if it merely has a parent (the naive easy way for
             // now).
             if ( this.ownerElement.parentNode ) {
-                behavior.connectedCallback( this.ownerElement )
+                behavior.connectedCallback()
             }
 
             if ( Array.isArray( behavior.constructor.observedAttributes ) ) {
@@ -169,7 +169,6 @@ class HasAttribute {
 
             for ( const record of records ) {
                 behavior.attributeChangedCallback(
-                    this.ownerElement,
                     record.attributeName,
                     record.oldValue,
                     this.ownerElement.getAttribute( record.attributeName )
@@ -193,7 +192,7 @@ class HasAttribute {
         for ( const attr of Array.from( this.ownerElement.attributes ) ) {
             if ( ! behavior.constructor.observedAttributes.includes( attr.name ) ) continue
             if ( behavior.attributeChangedCallback )
-                behavior.attributeChangedCallback( this.ownerElement, attr.name, undefined, attr.value )
+                behavior.attributeChangedCallback( attr.name, undefined, attr.value )
         }
     }
 }
