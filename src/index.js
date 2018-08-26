@@ -197,7 +197,7 @@ class HasAttribute {
         for ( const attr of Array.from( this.ownerElement.attributes ) ) {
             if ( ! behavior.constructor.observedAttributes.includes( attr.name ) ) continue
             if ( behavior.attributeChangedCallback )
-                behavior.attributeChangedCallback( attr.name, undefined, attr.value )
+                behavior.attributeChangedCallback( attr.name, null, attr.value )
         }
     }
 }
