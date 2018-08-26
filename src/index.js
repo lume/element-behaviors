@@ -140,6 +140,11 @@ class HasAttribute {
             const behavior = new Behavior( this.ownerElement )
             this.behaviors.set( name, behavior )
 
+            // read observedAttributes first, in case anything external fires
+            // logic in the getter and expects it to happen before any
+            // lifecycle methods (f.e. a library like SkateJS)
+            const observedAttributes = behavior.constructor.observedAttributes
+
             // TODO fire this connectedCallback only if the element is in a
             // document, not if it merely has a parent (the naive easy way for
             // now).
@@ -147,7 +152,7 @@ class HasAttribute {
                 behavior.connectedCallback()
             }
 
-            if ( Array.isArray( behavior.constructor.observedAttributes ) ) {
+            if ( Array.isArray( observedAttributes ) ) {
                 this.fireInitialAttributeChangedCallbacks( behavior )
                 this.createAttributeObserver( behavior )
             }
