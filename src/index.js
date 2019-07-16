@@ -203,3 +203,16 @@ class HasAttribute {
 }
 
 customAttributes.define( 'has', HasAttribute )
+
+if (Element.prototype.attachShadow) {
+    const _attachShadow = Element.prototype.attachShadow
+    
+    Element.prototype.attachShadow = function(...args) {
+        const root = _attachShadow.call(this, ...args)
+        const attributes = new CustomAttributeRegistry(root)
+        
+        attributes.define( 'has', HasAttribute )
+        
+        return root
+    }
+}
