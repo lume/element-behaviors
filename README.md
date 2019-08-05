@@ -4,6 +4,8 @@ Apply any number of functionalities ("behaviors") to an HTML element.
 
 #### `npm i element-behaviors --save`
 
+For a basic example, see this live pen: https://codepen.io/trusktr/pen/ymPXNb
+
 Element behaviors are re-usable bits and pieces of logic that we can mix onto any HTML element.
 
 To explain what "element behaviors" are, an analogy can be used: "element behaviors" are effectively
