@@ -1,4 +1,4 @@
-import 'custom-attributes/attr.js'
+import customAttributes, { CustomAttributeRegistry } from 'custom-attributes/pkg/dist-umd'
 
 // TODO: element behaviors currently don't work on elements when they are
 // defined (via elementBehaviors.define()) after the elements are already in the

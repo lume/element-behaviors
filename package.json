@@ -19,7 +19,7 @@
         "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "Above are builder scripts. Place custom scripts below."
     },
     "dependencies": {
-        "custom-attributes": "github:trusktr/custom-attributes#patch-1"
+        "custom-attributes": "github:infamous/custom-attributes#built/patch-1"
     },
     "devDependencies": {
         "builder": "4.0.0",
