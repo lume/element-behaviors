@@ -93,7 +93,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "version", function() { return version; });
 /* harmony import */ var custom_attributes_attr_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(1);
 /* harmony import */ var custom_attributes_attr_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(custom_attributes_attr_js__WEBPACK_IMPORTED_MODULE_0__);
-
+ // TODO: element behaviors currently don't work on elements when they are
+// defined (via elementBehaviors.define()) after the elements are already in the
+// DOM. Make it order-independent.
 
 class BehaviorRegistry {
   constructor() {
@@ -292,7 +294,7 @@ if (Element.prototype.attachShadow) {
 // new version of this package.
 
 
-const version = '2.1.0';
+const version = '2.1.1';
 
 /***/ }),
 /* 1 */
