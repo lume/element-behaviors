@@ -1,5 +1,9 @@
 import 'custom-attributes/attr.js'
 
+// TODO: element behaviors currently don't work on elements when they are
+// defined (via elementBehaviors.define()) after the elements are already in the
+// DOM. Make it order-independent.
+
 class BehaviorRegistry {
     constructor() {
         this._definedBehaviors = new Map
