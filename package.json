@@ -1,27 +1,45 @@
 {
-  "name": "element-behaviors",
-  "description": "An entity-component system for HTML elements.",
-  "version": "2.1.0",
-  "main": "src/index.js",
-  "homepage": "https://github.com/trusktr/element-behaviors",
-  "repository": {
-    "type": "git",
-    "url": "git@github.com:trusktr/element-behaviors.git"
-  },
-  "bugs": {
-    "url": "https://github.com/trusktr/element-behaviors/issues"
-  },
-  "keywords": [
-    "dom",
-    "web-development",
-    "web-components",
-    "component-entity",
-    "entity-component",
-    "entity-component-system",
-    "ecs",
-    "webdev"
-  ],
-  "dependencies": {
-    "custom-attributes": "github:trusktr/custom-attributes#patch-1"
-  }
+    "name": "element-behaviors",
+    "description": "An entity-component system for HTML elements.",
+    "version": "2.1.0",
+    "license": "LGPL-3.0",
+    "main": "src/index.js",
+    "homepage": "https://github.com/trusktr/element-behaviors",
+    "scripts": {
+        "clean": "builder run build:clean",
+        "build": "builder run build:prod",
+        "dev": "builder run build:dev",
+        "test": "builder run npm:test",
+        "test-debug": "builder run npm:test-debug",
+        "release:patch": "builder run release:patch",
+        "release:minor": "builder run release:minor",
+        "release:major": "builder run release:major",
+        "version": "builder run npm:version",
+        "postversion": "builder run npm:postversion",
+        "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "Above are builder scripts. Place custom scripts below."
+    },
+    "dependencies": {
+        "custom-attributes": "github:trusktr/custom-attributes#patch-1"
+    },
+    "devDependencies": {
+        "builder": "4.0.0",
+        "builder-js-package": "trusktr/builder-js-package#17d73e2f28678773d7ebb731d96e7b114e49b368"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git@github.com:trusktr/element-behaviors.git"
+    },
+    "bugs": {
+        "url": "https://github.com/trusktr/element-behaviors/issues"
+    },
+    "keywords": [
+        "dom",
+        "web-development",
+        "web-components",
+        "component-entity",
+        "entity-component",
+        "entity-component-system",
+        "ecs",
+        "webdev"
+    ]
 }
