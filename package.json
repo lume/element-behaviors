@@ -3,7 +3,7 @@
     "description": "An entity-component system for HTML elements.",
     "version": "2.1.1",
     "license": "LGPL-3.0",
-    "main": "src/index.js",
+    "main": "index.js",
     "homepage": "https://github.com/trusktr/element-behaviors",
     "scripts": {
         "clean": "builder run build:clean",
