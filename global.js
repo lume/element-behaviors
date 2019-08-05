@@ -294,7 +294,7 @@ if (Element.prototype.attachShadow) {
 // new version of this package.
 
 
-const version = '2.1.1';
+const version = '2.1.2';
 
 /***/ }),
 /* 1 */
