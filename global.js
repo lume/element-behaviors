@@ -1,4 +1,3 @@
-var elementBehaviors =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
