@@ -1,15 +1,23 @@
 import customAttributes, {CustomAttributeRegistry} from 'custom-attributes/pkg/dist-umd'
+import {Constructor} from 'lowclass'
 
 // TODO: element behaviors currently don't work on elements when they are
 // defined (via elementBehaviors.define()) after the elements are already in the
 // DOM. Make it order-independent.
 
-class BehaviorRegistry {
-	constructor() {
-		this._definedBehaviors = new Map()
-	}
+type PossibleBehaviorInstance = {
+	awaitElementDefined?: boolean
+	connectedCallback?: () => void
+	disconnectedCallback?: () => void
+	attributeChangedCallback?: (attr: string, oldValue: string | null, newValue: string | null) => void
+}
 
-	define(name, Behavior) {
+type PossibleBehaviorConstructor = Constructor<PossibleBehaviorInstance, [Element], {observedAttributes?: string[]}>
+
+class BehaviorRegistry {
+	protected _definedBehaviors = new Map<string, PossibleBehaviorConstructor>()
+
+	define(name: string, Behavior: PossibleBehaviorConstructor) {
 		if (!this._definedBehaviors.has(name)) {
 			this._definedBehaviors.set(name, Behavior)
 		} else {
@@ -17,19 +25,26 @@ class BehaviorRegistry {
 		}
 	}
 
-	get(name) {
+	get(name: string) {
 		return this._definedBehaviors.get(name)
 	}
 
-	has(name) {
+	has(name: string) {
 		return this._definedBehaviors.has(name)
+	}
+}
+
+declare global {
+	const elementBehaviors: BehaviorRegistry
+	interface Window {
+		elementBehaviors: BehaviorRegistry
 	}
 }
 
 window.elementBehaviors = new BehaviorRegistry()
 
 // for semantic purpose
-class BehaviorMap extends Map {}
+class BehaviorMap<K, V> extends Map<K, V> {}
 
 // stores the behaviors associated to each element.
 const behaviorMaps = new WeakMap()
@@ -49,33 +64,35 @@ Object.defineProperty(Element.prototype, 'behaviors', {
 	},
 })
 
+type ElementWithBehaviors = Element & {behaviors: BehaviorMap<string, PossibleBehaviorInstance>}
+
 // One instance of is instantiated per element with has="" attribute.
 class HasAttribute {
-	constructor() {
-		// TODO constructor is confusing because this.ownerElement doesn't exist. Report to custom-attributes
-	}
+	// properties defined by custom-attributes
+	ownerElement!: ElementWithBehaviors
+	value!: string
+
+	behaviors!: BehaviorMap<string, PossibleBehaviorInstance>
+
+	observers = new Map<PossibleBehaviorInstance, MutationObserver>()
+	connectedBehaviors = new Set<PossibleBehaviorInstance>()
+	definePromises = new Map<string, CancelablePromise<void>>()
 
 	connectedCallback() {
-		this.observers = new Map()
 		this.behaviors = this.ownerElement.behaviors
-		this.connectedBehaviors = new Set()
-		this.definePromises = new Map()
-		this.foo = true
 		this.changedCallback('', this.value)
 	}
 
 	disconnectedCallback() {
 		this.changedCallback(this.value, '')
-		this.observers && this.observers.clear()
-		this.connectedBehaviors && this.connectedBehaviors.clear()
-		if (this.definePromises) {
-			for (const [, promise] of this.definePromises) promise.cancel()
-			this.definePromises.clear()
-		}
+		this.observers.clear()
+		this.connectedBehaviors.clear()
+		for (const [, promise] of this.definePromises) promise.cancel()
+		this.definePromises.clear()
 		delete this.behaviors
 	}
 
-	changedCallback(oldVal, newVal) {
+	changedCallback(_oldVal: string, newVal: string) {
 		const newBehaviors = this.getBehaviorNames(newVal)
 		const previousBehaviors = Array.from(this.behaviors.keys())
 
@@ -87,14 +104,14 @@ class HasAttribute {
 		this.handleDiff(removed, added)
 	}
 
-	getBehaviorNames(string) {
+	getBehaviorNames(string: string) {
 		if (string.trim() == '') return []
 		else return string.split(/\s+/)
 	}
 
-	getDiff(previousBehaviors, newBehaviors) {
+	getDiff(previousBehaviors: string[], newBehaviors: string[]) {
 		const diff = {
-			removed: [],
+			removed: [] as string[],
 			added: newBehaviors,
 		}
 
@@ -118,27 +135,23 @@ class HasAttribute {
 		return diff
 	}
 
-	handleDiff(removed, added) {
-		for (const name of removed) {
-			if (!elementBehaviors.has(name)) continue
-			this.disconnectBehavior(name)
-		}
-
-		for (const name of added) {
-			if (!elementBehaviors.has(name)) continue
-			this.connectBehavior(name)
-		}
+	handleDiff(removed: string[], added: string[]) {
+		for (const name of removed) this.disconnectBehavior(name)
+		for (const name of added) this.connectBehavior(name)
 	}
 
-	connectBehavior(name) {
+	private connectBehavior(name: string) {
 		const Behavior = elementBehaviors.get(name)
+
+		if (!Behavior) return
+
 		const behavior = new Behavior(this.ownerElement)
 		this.behaviors.set(name, behavior)
 
 		// read observedAttributes first, in case anything external fires
 		// logic in the getter and expects it to happen before any
 		// lifecycle methods (f.e. a library like SkateJS)
-		const observedAttributes = behavior.constructor.observedAttributes
+		const observedAttributes = (behavior.constructor as PossibleBehaviorConstructor).observedAttributes
 
 		if (this.ownerElement.isConnected) {
 			const tagName = this.ownerElement.tagName
@@ -158,11 +171,11 @@ class HasAttribute {
 				promise.then(() => {
 					this.definePromises.delete(promiseId)
 					this.connectedBehaviors.add(behavior)
-					behavior.connectedCallback()
+					behavior.connectedCallback && behavior.connectedCallback()
 				})
 			} else {
 				this.connectedBehaviors.add(behavior)
-				behavior.connectedCallback()
+				behavior.connectedCallback && behavior.connectedCallback()
 			}
 		}
 
@@ -172,12 +185,14 @@ class HasAttribute {
 		}
 	}
 
-	disconnectBehavior(name) {
+	private disconnectBehavior(name: string) {
 		const behavior = this.behaviors.get(name)
+
+		if (!behavior) return
 
 		if (this.ownerElement.isConnected) {
 			if (this.connectedBehaviors.has(behavior)) {
-				behavior.disconnectedCallback()
+				behavior.disconnectedCallback && behavior.disconnectedCallback()
 				this.connectedBehaviors.delete(behavior)
 			}
 
@@ -195,9 +210,10 @@ class HasAttribute {
 		this.behaviors.delete(name)
 	}
 
-	destroyAttributeObserver(behavior) {
-		if (!this.observers.has(behavior)) return
-		this.observers.get(behavior).disconnect()
+	destroyAttributeObserver(behavior: PossibleBehaviorInstance) {
+		const observer = this.observers.get(behavior)
+		if (!observer) return
+		observer.disconnect()
 		this.observers.delete(behavior)
 	}
 
@@ -206,15 +222,15 @@ class HasAttribute {
 	// We have to create one observer per behavior because otherwise
 	// MutationObserver doesn't have an API for disconnecting from a single
 	// element, only for disconnecting from all elements.
-	createAttributeObserver(behavior) {
+	createAttributeObserver(behavior: PossibleBehaviorInstance) {
 		const observer = new MutationObserver(records => {
 			if (!behavior.attributeChangedCallback) return
 
 			for (const record of records) {
 				behavior.attributeChangedCallback(
-					record.attributeName,
+					record.attributeName!,
 					record.oldValue,
-					this.ownerElement.attributes[record.attributeName].value,
+					this.ownerElement.attributes.getNamedItem(record.attributeName!)!.value,
 				)
 			}
 		})
@@ -222,26 +238,27 @@ class HasAttribute {
 		observer.observe(this.ownerElement, {
 			attributes: true,
 			attributeOldValue: true,
-			attributeFilter: behavior.constructor.observedAttributes,
+			attributeFilter: (behavior.constructor as PossibleBehaviorConstructor).observedAttributes,
 		})
 
 		this.observers.set(behavior, observer)
 	}
 
-	fireInitialAttributeChangedCallbacks(behavior, attributes) {
+	fireInitialAttributeChangedCallbacks(behavior: PossibleBehaviorInstance, attributes: string[]) {
 		if (!behavior.attributeChangedCallback) return
 
 		for (const name of attributes) {
 			if (this.ownerElement.hasAttribute(name))
-				behavior.attributeChangedCallback(name, null, this.ownerElement.attributes[name].value)
+				behavior.attributeChangedCallback(name, null, this.ownerElement.attributes.getNamedItem(name)!.value)
 		}
 	}
 }
 
+// TODO safe types for privates
 function Privates() {
 	const storage = new WeakMap()
 
-	return obj => {
+	return (obj: object) => {
 		let privates = storage.get(obj)
 		if (!privates) storage.set(obj, (privates = {}))
 		return privates
@@ -250,13 +267,24 @@ function Privates() {
 
 const _ = Privates()
 
-class CancelablePromise extends Promise {
-	constructor(executor, options) {
+interface CancelablePromiseOptions {
+	rejectOnCancel?: boolean
+}
+
+class CancelablePromise<T> extends Promise<T> {
+	canceled: boolean
+
+	constructor(
+		executor:
+			| Promise<T>
+			| ((resolve: (value?: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void),
+		options: CancelablePromiseOptions,
+	) {
 		const rejectOnCancel = options ? options.rejectOnCancel : false
 		let originalReject
 
 		// if the first arg is a promise-like
-		if (typeof executor === 'object' && executor.then && executor.catch) {
+		if (executor instanceof Promise) {
 			const promise = executor
 
 			super((resolve, reject) => {
@@ -264,10 +292,12 @@ class CancelablePromise extends Promise {
 
 				promise
 					.then(value => {
-						if (!this.canceled) resolve(value)
+						if (this.canceled) return
+						resolve(value)
 					})
 					.catch(error => {
-						if (!this.canceled) reject(error)
+						if (this.canceled) return
+						reject(error)
 					})
 			})
 		} else {
@@ -275,10 +305,12 @@ class CancelablePromise extends Promise {
 				originalReject = reject
 				executor(
 					value => {
-						if (!this.canceled) resolve(value)
+						if (this.canceled) return
+						resolve(value)
 					},
 					error => {
-						if (!this.canceled) reject(error)
+						if (this.canceled) return
+						reject(error)
 					},
 				)
 			})
