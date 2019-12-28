@@ -52,7 +52,7 @@ Object.defineProperty(Element.prototype, 'behaviors', {
 // One instance of is instantiated per element with has="" attribute.
 class HasAttribute {
 	constructor() {
-		// TODO constructor confusing because this.ownerElement doesn't exist. Report to custom-attributes
+		// TODO constructor is confusing because this.ownerElement doesn't exist. Report to custom-attributes
 	}
 
 	connectedCallback() {
