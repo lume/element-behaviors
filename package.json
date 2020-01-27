@@ -8,8 +8,8 @@
 	"homepage": "https://github.com/trusktr/element-behaviors",
 	"scripts": {
 		"clean": "builder run clean",
-		"build": "builder run build",
-		"dev": "builder run dev",
+		"build": "builder run build:prod",
+		"dev": "builder run build:dev",
 		"test": "builder run npm:test",
 		"test-debug": "builder run npm:test-debug",
 		"release:patch": "builder run release:patch",
@@ -24,7 +24,7 @@
 	},
 	"devDependencies": {
 		"builder": "4.0.0",
-		"builder-js-package": "trusktr/builder-js-package#34c9e8ee01319f73f76f9facb410d7e7aff84db4",
+		"builder-js-package": "trusktr/builder-js-package#6d075896771ca5a71a39081aeb07c1d986df46ef",
 		"lowclass": "^4.9.2"
 	},
 	"repository": {
