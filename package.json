@@ -24,7 +24,7 @@
 	},
 	"devDependencies": {
 		"builder": "4.0.0",
-		"builder-js-package": "trusktr/builder-js-package#6d075896771ca5a71a39081aeb07c1d986df46ef",
+		"builder-js-package": "^1.0.0",
 		"lowclass": "^4.9.2"
 	},
 	"repository": {
