@@ -7,10 +7,8 @@
 	"types": "dist/index.d.ts",
 	"homepage": "https://github.com/trusktr/element-behaviors",
 	"scripts": {
+		"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX BUILDER SCRIPTS": "",
 		"builder COMMENT": "The LOCAL_DEV=true env var is a strange requirement that makes builder work when everything is linked together by rush.js, otherwise builder won't be able to find archetypes.",
-		"clean": "LOCAL_DEV=true builder run clean",
-		"build": "LOCAL_DEV=true builder run build:prod",
-		"dev": "LOCAL_DEV=true builder run build:dev",
 		"test": "LOCAL_DEV=true builder run npm:test",
 		"test-debug": "LOCAL_DEV=true builder run npm:test-debug",
 		"release:patch": "LOCAL_DEV=true builder run release:patch",
@@ -18,7 +16,11 @@
 		"release:major": "LOCAL_DEV=true builder run release:major",
 		"version": "LOCAL_DEV=true builder run npm:version",
 		"postversion": "LOCAL_DEV=true builder run npm:postversion",
-		"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "Above are builder scripts. Place custom scripts below."
+		"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LUME SCRIPTS": "",
+		"clean": "lume clean",
+		"build": "lume build",
+		"dev": "lume dev",
+		"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX OTHER SCRIPTS": ""
 	},
 	"dependencies": {
 		"custom-attributes": "github:infamous/custom-attributes#built/patch-1"
