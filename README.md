@@ -63,27 +63,27 @@ So, let's define the behavior:
 
 ```html
 <script>
-    // define an element behavior class
-    class ClickLogger {
-        constructor(element) {
-            this.handler = () => {
-                console.log('Clicked an element: ', element)
-            }
-        }
+	// define an element behavior class
+	class ClickLogger {
+		constructor(element) {
+			this.handler = () => {
+				console.log('Clicked an element: ', element)
+			}
+		}
 
-        // called when the `element` is added to the DOM
-        connectedCallback(element) {
-            element.addEventListener('click', this.handler)
-        }
+		// called when the `element` is added to the DOM
+		connectedCallback(element) {
+			element.addEventListener('click', this.handler)
+		}
 
-        // called when the `element` is removed from the DOM
-        disconnectedCallback(element) {
-            element.removeEventListener('click', this.handler)
-        }
-    }
+		// called when the `element` is removed from the DOM
+		disconnectedCallback(element) {
+			element.removeEventListener('click', this.handler)
+		}
+	}
 
-    // define the behavior with the class
-    elementBehaviors.define('click-logger', ClickLogger)
+	// define the behavior with the class
+	elementBehaviors.define('click-logger', ClickLogger)
 </script>
 ```
 
@@ -110,28 +110,24 @@ each method is the element that has the behavior:
 
 ```js
 class SomeBehavior {
+	// called only once, given the element that the behavior is attached to
+	constructor(element) {}
 
-    // called only once, given the element that the behavior is attached to
-    constructor( element ) {
-    }
+	// called any time the associated `element` is added to the DOM
+	connectedCallback(element) {}
 
-    // called any time the associated `element` is added to the DOM
-    connectedCallback( element ) {
-    }
+	// called any time the associated `element` is removed from the DOM
+	disconnectedCallback(element) {}
 
-    // called any time the associated `element` is removed from the DOM
-    disconnectedCallback( element ) {
-    }
+	// as with custom elements, define which attributes of the associated element that the behavior reacts to
+	static get observedAttributes() {
+		return [
+			/* ... */
+		]
+	}
 
-    // as with custom elements, define which attributes of the associated element that the behavior reacts to
-    static get observedAttributes() {
-        return [ ... ]
-    }
-
-    // called any time an observed attribute of the associated element has been changed
-    attributeChangedCallback( element, attributeName, oldValue, newValue ) {
-    }
-
+	// called any time an observed attribute of the associated element has been changed
+	attributeChangedCallback(element, attributeName, oldValue, newValue) {}
 }
 ```
 
@@ -168,14 +164,20 @@ space-separated list in the `has` attribute:
 
 ```html
 <script>
-    class Foo { ... }
-    elementBehaviors.define('foo', Foo)
+	class Foo {
+		/* ... */
+	}
+	elementBehaviors.define('foo', Foo)
 
-    class Bar { ... }
-    elementBehaviors.define('bar', Bar)
+	class Bar {
+		/* ... */
+	}
+	elementBehaviors.define('bar', Bar)
 
-    class Baz { ... }
-    elementBehaviors.define('baz', Baz)
+	class Baz {
+		/* ... */
+	}
+	elementBehaviors.define('baz', Baz)
 </script>
 
 <div has="foo bar baz">one</div>
@@ -246,15 +248,15 @@ To define a Custom Element with default behaviors, it is done similarly to `obse
 
 ```js
 class SomeElement extends DefaultBehaviorsMixin(HTMLElement) {
-    // If you know how to define observed attributes on your Custom Element,
-    static get observedAttributes() {
-        return ['some-attribute', 'other-attribute']
-    }
+	// If you know how to define observed attributes on your Custom Element,
+	static get observedAttributes() {
+		return ['some-attribute', 'other-attribute']
+	}
 
-    // then you can basically do the same to define default behaviors:
-    static get defaultBehaviors() {
-        return ['some-behavior', 'click-logger']
-    }
+	// then you can basically do the same to define default behaviors:
+	static get defaultBehaviors() {
+		return ['some-behavior', 'click-logger']
+	}
 }
 ```
 
@@ -274,16 +276,16 @@ and we define a Custom Element like:
 
 ```js
 class SomeElement extends DefaultBehaviorsMixin(HTMLElement) {
-    static get defaultBehaviors() {
-        return {
-            'click-logger': (element, initialBehaviors) => {
-                if (initialBehaviors.includes('another-behavior')) {
-                    return false
-                }
-                return true
-            },
-        }
-    }
+	static get defaultBehaviors() {
+		return {
+			'click-logger': (element, initialBehaviors) => {
+				if (initialBehaviors.includes('another-behavior')) {
+					return false
+				}
+				return true
+			},
+		}
+	}
 }
 ```
 
