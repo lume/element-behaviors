@@ -7,26 +7,28 @@
 	"types": "dist/index.d.ts",
 	"homepage": "https://github.com/trusktr/element-behaviors",
 	"scripts": {
-		"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX BUILDER SCRIPTS": "",
-		"builder COMMENT": "The LOCAL_DEV=true env var is a strange requirement that makes builder work when everything is linked together by rush.js, otherwise builder won't be able to find archetypes.",
-		"test": "LOCAL_DEV=true builder run npm:test",
-		"test-debug": "LOCAL_DEV=true builder run npm:test-debug",
-		"release:patch": "LOCAL_DEV=true builder run release:patch",
-		"release:minor": "LOCAL_DEV=true builder run release:minor",
-		"release:major": "LOCAL_DEV=true builder run release:major",
-		"version": "LOCAL_DEV=true builder run npm:version",
-		"postversion": "LOCAL_DEV=true builder run npm:postversion",
-		"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX LUME SCRIPTS": "",
+		"LUME SCRIPTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "",
 		"clean": "lume clean",
 		"build": "lume build",
 		"dev": "lume dev",
-		"XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX OTHER SCRIPTS": ""
+		"typecheck": "lume typecheck",
+		"typecheck:watch": "lume typecheckWatch",
+		"test": "lume test",
+		"test:debug": "lume testDebug",
+		"prettier": "lume prettier",
+		"prettier:check": "lume prettierCheck",
+		"release:patch": "lume releasePatch",
+		"release:minor": "lume releaseMinor",
+		"release:major": "lume releaseMajor",
+		"version": "lume versionHook",
+		"postversion": "lume postVersionHook",
+		"OTHER SCRIPTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "",
+		"prepack": "npm run build"
 	},
 	"dependencies": {
 		"custom-attributes": "github:infamous/custom-attributes#built/patch-1"
 	},
 	"devDependencies": {
-		"builder": "^5.0.0",
 		"builder-js-package": "^1.0.0",
 		"lowclass": "^4.9.2"
 	},
