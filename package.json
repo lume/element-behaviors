@@ -5,6 +5,12 @@
 	"license": "LGPL-3.0",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
+	"type": "module",
+	"exports COMMENT:": "This removes 'dist' from import statements, as well as replaces the 'main' field. See https://github.com/nodejs/node/issues/14970#issuecomment-571887546",
+	"exports": {
+		".": "./dist/index.js",
+		"./": "./dist/"
+	},
 	"homepage": "https://github.com/trusktr/element-behaviors",
 	"scripts": {
 		"LUME SCRIPTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "",
