@@ -10,6 +10,8 @@ type PossibleBehaviorInstance = {
 	connectedCallback?: () => void
 	disconnectedCallback?: () => void
 	attributeChangedCallback?: (attr: string, oldValue: string | null, newValue: string | null) => void
+	[k: string]: any
+	[k: number]: any
 }
 
 type PossibleBehaviorConstructor = Constructor<PossibleBehaviorInstance, [Element], {observedAttributes?: string[]}>
@@ -17,7 +19,7 @@ type PossibleBehaviorConstructor = Constructor<PossibleBehaviorInstance, [Elemen
 class BehaviorRegistry {
 	protected _definedBehaviors = new Map<string, PossibleBehaviorConstructor>()
 
-	define(name: string, Behavior: PossibleBehaviorConstructor) {
+	define<T extends PossibleBehaviorConstructor>(name: string, Behavior: T) {
 		if (!this._definedBehaviors.has(name)) {
 			this._definedBehaviors.set(name, Behavior)
 		} else {
@@ -41,7 +43,7 @@ declare global {
 	}
 }
 
-window.elementBehaviors = new BehaviorRegistry()
+export const elementBehaviors = (window.elementBehaviors = new BehaviorRegistry())
 
 // for semantic purpose
 class BehaviorMap<K, V> extends Map<K, V> {}
@@ -104,12 +106,12 @@ class HasAttribute {
 		this.handleDiff(removed, added)
 	}
 
-	getBehaviorNames(string: string) {
+	private getBehaviorNames(string: string) {
 		if (string.trim() == '') return []
 		else return string.split(/\s+/)
 	}
 
-	getDiff(previousBehaviors: string[], newBehaviors: string[]) {
+	private getDiff(previousBehaviors: string[], newBehaviors: string[]) {
 		const diff = {
 			removed: [] as string[],
 			added: newBehaviors,
@@ -135,7 +137,7 @@ class HasAttribute {
 		return diff
 	}
 
-	handleDiff(removed: string[], added: string[]) {
+	private handleDiff(removed: string[], added: string[]) {
 		for (const name of removed) this.disconnectBehavior(name)
 		for (const name of added) this.connectBehavior(name)
 	}
@@ -190,7 +192,7 @@ class HasAttribute {
 
 		if (!behavior) return
 
-		if (this.ownerElement.isConnected) {
+		{
 			if (this.connectedBehaviors.has(behavior)) {
 				behavior.disconnectedCallback && behavior.disconnectedCallback()
 				this.connectedBehaviors.delete(behavior)
@@ -223,19 +225,46 @@ class HasAttribute {
 	// MutationObserver doesn't have an API for disconnecting from a single
 	// element, only for disconnecting from all elements.
 	createAttributeObserver(behavior: PossibleBehaviorInstance) {
+		const el = this.ownerElement
+
 		const observer = new MutationObserver(records => {
 			if (!behavior.attributeChangedCallback) return
 
+			// Because we get mutations in order, and we have all the attribute
+			// values for a given attribute along the way while iterating on
+			// mutation records, we keep track of previous and current attribute
+			// values (per attribute name) with this variable and thus we can
+			// fire behavior.attributeChangedCallback with each previous and
+			// current value. For why we need to do this, see
+			// https://stackoverflow.com/questions/60593551.
+			let lastAttributeValues: {[k: string]: string | null} = {}
+
+			let name = ''
+
 			for (const record of records) {
-				behavior.attributeChangedCallback(
-					record.attributeName!,
-					record.oldValue,
-					this.ownerElement.attributes.getNamedItem(record.attributeName!)!.value,
-				)
+				if (record.type !== 'attributes') continue
+
+				name = record.attributeName!
+
+				if (lastAttributeValues[name] === undefined) {
+					lastAttributeValues[name] = record.oldValue
+					continue
+				}
+
+				behavior.attributeChangedCallback(name, lastAttributeValues[name], record.oldValue)
+
+				lastAttributeValues[name] = record.oldValue
+			}
+
+			let attr: Attr | null
+
+			for (const name in lastAttributeValues) {
+				attr = el.attributes.getNamedItem(name)
+				behavior.attributeChangedCallback(name, lastAttributeValues[name], attr === null ? null : attr.value)
 			}
 		})
 
-		observer.observe(this.ownerElement, {
+		observer.observe(el, {
 			attributes: true,
 			attributeOldValue: true,
 			attributeFilter: (behavior.constructor as PossibleBehaviorConstructor).observedAttributes,
