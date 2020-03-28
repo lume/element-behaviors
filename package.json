@@ -36,7 +36,7 @@
 	},
 	"devDependencies": {
 		"@lume/cli": "^1.0.0",
-		"lowclass": "^4.9.2"
+		"lowclass": "^4.9.3"
 	},
 	"repository": {
 		"type": "git",
