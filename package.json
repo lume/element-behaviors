@@ -35,7 +35,7 @@
 		"custom-attributes": "github:infamous/custom-attributes#built/patch-1"
 	},
 	"devDependencies": {
-		"@lume/cli": "^1.0.0",
+		"@lume/cli": "^2.0.0",
 		"lowclass": "^4.9.3"
 	},
 	"repository": {
