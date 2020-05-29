@@ -32,7 +32,7 @@
 		"prepack": "npm run build"
 	},
 	"dependencies": {
-		"custom-attributes": "github:infamous/custom-attributes#built/patch-1"
+		"custom-attributes": "github:lume/custom-attributes#built/patch-1"
 	},
 	"devDependencies": {
 		"@lume/cli": "^2.0.0",

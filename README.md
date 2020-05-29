@@ -228,8 +228,8 @@ elementBehaviors.of(el).remove('baz')
 ```
 
 I currently have this add/remove functionality implemented
-[here](https://github.com/trusktr/infamous/blob/v18.0.10/src/html/behaviors/DefaultBehaviors.js), as
-part of Infamous, but this is not standlone yet.
+[here](https://github.com/lume/lume/blob/v18.0.10/src/html/behaviors/DefaultBehaviors.js), as
+part of LUME, but this is not standlone yet.
 
 If you have any thoughts on this API, please
 [let me know](https://github.com/trusktr/element-behaviors/issues/1)!
@@ -240,8 +240,8 @@ I'm not sure if this should be included here. Maybe it should end up in a separa
 top of element-behaviors, but I'm placing the idea here, for now.
 
 The
-[DefaultBehaviorsMixin](https://github.com/trusktr/infamous/blob/v18.0.10/src/html/behaviors/DefaultBehaviors.js)
-of Infamous gives Custom Element classes the ability to define which behaviors they ship with by
+[DefaultBehaviorsMixin](https://github.com/lume/lume/blob/v18.0.10/src/html/behaviors/DefaultBehaviors.js)
+of LUME gives Custom Element classes the ability to define which behaviors they ship with by
 default, which is super useful!
 
 To define a Custom Element with default behaviors, it is done similarly to `observedAttributes`:
