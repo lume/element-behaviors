@@ -74,7 +74,7 @@ class HasAttribute {
 	ownerElement!: ElementWithBehaviors
 	value!: string
 
-	behaviors!: BehaviorMap<string, PossibleBehaviorInstance>
+	behaviors?: BehaviorMap<string, PossibleBehaviorInstance>
 
 	observers = new Map<PossibleBehaviorInstance, MutationObserver>()
 	connectedBehaviors = new Set<PossibleBehaviorInstance>()
@@ -96,7 +96,7 @@ class HasAttribute {
 
 	changedCallback(_oldVal: string, newVal: string) {
 		const newBehaviors = this.getBehaviorNames(newVal)
-		const previousBehaviors = Array.from(this.behaviors.keys())
+		const previousBehaviors = Array.from(this.behaviors!.keys())
 
 		// small optimization: if no previous or new behaviors, just quit
 		// early. It would still function the same without this.
@@ -148,7 +148,7 @@ class HasAttribute {
 		if (!Behavior) return
 
 		const behavior = new Behavior(this.ownerElement)
-		this.behaviors.set(name, behavior)
+		this.behaviors!.set(name, behavior)
 
 		// read observedAttributes first, in case anything external fires
 		// logic in the getter and expects it to happen before any
@@ -188,7 +188,7 @@ class HasAttribute {
 	}
 
 	private disconnectBehavior(name: string) {
-		const behavior = this.behaviors.get(name)
+		const behavior = this.behaviors!.get(name)
 
 		if (!behavior) return
 
@@ -209,7 +209,7 @@ class HasAttribute {
 
 		this.destroyAttributeObserver(behavior)
 
-		this.behaviors.delete(name)
+		this.behaviors!.delete(name)
 	}
 
 	destroyAttributeObserver(behavior: PossibleBehaviorInstance) {
