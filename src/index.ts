@@ -1,5 +1,6 @@
 import customAttributes, {CustomAttributeRegistry} from 'custom-attributes/pkg/dist-umd'
-import {Constructor} from 'lowclass'
+
+import type {Constructor} from 'lowclass'
 
 // TODO: element behaviors currently don't work on elements when they are
 // defined (via elementBehaviors.define()) after the elements are already in the

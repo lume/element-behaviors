@@ -35,7 +35,7 @@
 		"custom-attributes": "github:lume/custom-attributes#built/patch-1"
 	},
 	"devDependencies": {
-		"@lume/cli": "^3.0.0",
+		"@lume/cli": "^0.1.0",
 		"lowclass": "^4.9.3"
 	},
 	"repository": {
