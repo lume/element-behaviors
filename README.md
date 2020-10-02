@@ -323,8 +323,6 @@ Unless you run this in a modern browser, then:
 Otherwise, this should work fine in all the latest versions of Chrome, Firefox, Edge, Safari, and
 Opera (and probably other lesser-known browsers too).
 
-Description of the package. TODO automate this.
-
 ## Contributing
 
 First install dependencies:
