@@ -1,2 +1,2 @@
-import './index'
+// import './global'
 import './tests-shared'
