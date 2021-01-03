@@ -29,13 +29,13 @@
 		"version": "lume versionHook",
 		"postversion": "lume postVersionHook",
 		"OTHER SCRIPTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "",
-		"prepack": "npm run build"
+		"prepare": "npm run build"
 	},
 	"dependencies": {
 		"custom-attributes": "github:lume/custom-attributes#built/patch-1"
 	},
 	"devDependencies": {
-		"@lume/cli": "^0.2.0",
+		"@lume/cli": "^0.2.4",
 		"lowclass": "^4.9.3"
 	},
 	"repository": {
