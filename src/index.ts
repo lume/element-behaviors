@@ -307,7 +307,7 @@ class CancelablePromise<T> extends Promise<T> {
 	constructor(
 		executor:
 			| Promise<T>
-			| ((resolve: (value?: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void),
+			| ((resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void),
 		options: CancelablePromiseOptions,
 	) {
 		const rejectOnCancel = options ? options.rejectOnCancel : false
