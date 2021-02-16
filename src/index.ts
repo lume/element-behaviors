@@ -1,4 +1,6 @@
-import customAttributes, {CustomAttributeRegistry} from 'custom-attributes/pkg/dist-umd/index.js'
+import _customAttributes, {CustomAttributeRegistry} from 'custom-attributes/pkg/dist-umd/index.js'
+
+const customAttributes = _customAttributes.default
 
 import type {Constructor} from 'lowclass'
 
