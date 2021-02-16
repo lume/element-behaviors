@@ -1,2 +1,2 @@
-import './index'
-import './tests-shared'
+import './index.js'
+import './tests-shared.js'

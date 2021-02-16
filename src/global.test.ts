@@ -1,2 +1,1 @@
-// import './global'
-import './tests-shared'
+import './tests-shared.js'
