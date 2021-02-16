@@ -381,4 +381,4 @@ if (Element.prototype.attachShadow) {
 
 // Leave this last line alone, it gets automatically updated when publishing a
 // new version of this package.
-export const version = '2.2.5'
+export const version = '2.2.6'
