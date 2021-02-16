@@ -1,1 +1,1 @@
-declare module 'custom-attributes/pkg/dist-umd'
+declare module 'custom-attributes/pkg/dist-umd/index.js'
