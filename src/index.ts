@@ -1,6 +1,10 @@
 import _customAttributes, {CustomAttributeRegistry} from 'custom-attributes/pkg/dist-umd/index.js'
 
-const customAttributes = _customAttributes.default
+// TODO Update customAttributes to ESM. For now the following hack is needed so
+// as to operate in different environments (some read a `.default` property on
+// the default import that comes from CommonJS, some don't, so we catch both
+// cases here).
+const customAttributes = _customAttributes.default || _customAttributes
 
 import type {Constructor} from 'lowclass'
 
