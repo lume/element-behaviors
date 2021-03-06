@@ -316,7 +316,7 @@ Unless you run this in a modern browser, then:
 -   This package is currently written in ES6+ code, and not transpiled. You'll need to transpile
     yourself for older browsers. Meteor 1.6.2+ allows transpiling of node_modules, and you can also
     configure Webpack and other tools to transpile things in node_modules.
--   Uses [custom-attributes](https://github.com/matthewp/custom-attributes) by @matthewp to
+-   Uses [custom-attributes](https://github.com/lume/custom-attributes) (originally by @matthewp, forked in LUME) to
     implement the `has=""` attribute. You might need more polyfills and/or to transpile that project
     too.
 

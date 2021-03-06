@@ -1,10 +1,4 @@
-import _customAttributes, {CustomAttributeRegistry} from 'custom-attributes/pkg/dist-umd/index.js'
-
-// TODO Update customAttributes to ESM. For now the following hack is needed so
-// as to operate in different environments (some read a `.default` property on
-// the default import that comes from CommonJS, some don't, so we catch both
-// cases here).
-const customAttributes = _customAttributes.default || _customAttributes
+import {customAttributes, CustomAttributeRegistry, CustomAttribute} from '@lume/custom-attributes/dist/index.js'
 
 import type {Constructor} from 'lowclass'
 
@@ -76,10 +70,11 @@ Object.defineProperty(Element.prototype, 'behaviors', {
 type ElementWithBehaviors = Element & {behaviors: BehaviorMap<string, PossibleBehaviorInstance>}
 
 // One instance of is instantiated per element with has="" attribute.
-class HasAttribute {
-	// properties defined by custom-attributes
-	ownerElement!: ElementWithBehaviors
-	value!: string
+class HasAttribute implements CustomAttribute {
+	// properties defined by CustomAttribute
+	declare ownerElement: ElementWithBehaviors
+	declare value: string
+	declare name: string
 
 	behaviors?: BehaviorMap<string, PossibleBehaviorInstance>
 
@@ -311,9 +306,7 @@ class CancelablePromise<T> extends Promise<T> {
 	canceled: boolean
 
 	constructor(
-		executor:
-			| Promise<T>
-			| ((resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void),
+		executor: Promise<T> | ((resolve: (value: T | PromiseLike<T>) => void, reject: (reason?: any) => void) => void),
 		options: CancelablePromiseOptions,
 	) {
 		const rejectOnCancel = options ? options.rejectOnCancel : false
@@ -370,10 +363,11 @@ class PromiseCancellation extends Error {}
 
 customAttributes.define('has', HasAttribute)
 
+// TODO move this to custom-attributes
 if (Element.prototype.attachShadow) {
 	const _attachShadow = Element.prototype.attachShadow
 
-	Element.prototype.attachShadow = function(...args) {
+	Element.prototype.attachShadow = function (...args) {
 		const root = _attachShadow.call(this, ...args)
 		const attributes = new CustomAttributeRegistry(root)
 
