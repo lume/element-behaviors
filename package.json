@@ -32,7 +32,7 @@
 		"prepare": "npm run build"
 	},
 	"dependencies": {
-		"@lume/custom-attributes": "^0.1.1"
+		"@lume/custom-attributes": "^0.1.2"
 	},
 	"devDependencies": {
 		"@lume/cli": "^0.4.1",
