@@ -307,18 +307,18 @@ all who helped to discuss the idea!).
 
 Unless you run this in a modern browser, then:
 
--   Requires MutationObserver, you'll need a polyfill for older browsers.
--   Requires Map, you'll need a polyfill for older browsers.
--   Extends native builtin classes using `class` syntax, so you'll need
-    babel-transform-builtin-extends for older browsers. Babel 7 includes this by default, but it
-    [doesn't work yet](https://github.com/babel/babel/pull/7020#issuecomment-362113864), and Babel 7
-    is still in Beta.
--   This package is currently written in ES6+ code, and not transpiled. You'll need to transpile
-    yourself for older browsers. Meteor 1.6.2+ allows transpiling of node_modules, and you can also
-    configure Webpack and other tools to transpile things in node_modules.
--   Uses [custom-attributes](https://github.com/lume/custom-attributes) (originally by @matthewp, forked in LUME) to
-    implement the `has=""` attribute. You might need more polyfills and/or to transpile that project
-    too.
+- Requires MutationObserver, you'll need a polyfill for older browsers.
+- Requires Map, you'll need a polyfill for older browsers.
+- Extends native builtin classes using `class` syntax, so you'll need
+  babel-transform-builtin-extends for older browsers. Babel 7 includes this by default, but it
+  [doesn't work yet](https://github.com/babel/babel/pull/7020#issuecomment-362113864), and Babel 7
+  is still in Beta.
+- This package is currently written in ES6+ code, and not transpiled. You'll need to transpile
+  yourself for older browsers. Meteor 1.6.2+ allows transpiling of node_modules, and you can also
+  configure Webpack and other tools to transpile things in node_modules.
+- Uses [custom-attributes](https://github.com/lume/custom-attributes) (originally by @matthewp, forked in LUME) to
+  implement the `has=""` attribute. You might need more polyfills and/or to transpile that project
+  too.
 
 Otherwise, this should work fine in all the latest versions of Chrome, Firefox, Edge, Safari, and
 Opera (and probably other lesser-known browsers too).
@@ -392,17 +392,17 @@ npm run realease:major
 
 Any of the three `release:*` scripts will:
 
--   clean the project of any previous build output
--   stash any changes in the repo
--   build the project in production mode
--   run the project's tests
--   increment the version number (according to SemVer rules depending on if you choose patch, minor,
-    or major)
--   create a new commit containing the version number in the form "v1.2.3" as the message
--   tag that commit with a git tag of the same name as the commit message
--   publish the new version to NPM
--   push the commit and the tag to GitHub
--   and finally unstash any changes if there were any
+- clean the project of any previous build output
+- stash any changes in the repo
+- build the project in production mode
+- run the project's tests
+- increment the version number (according to SemVer rules depending on if you choose patch, minor,
+  or major)
+- create a new commit containing the version number in the form "v1.2.3" as the message
+- tag that commit with a git tag of the same name as the commit message
+- publish the new version to NPM
+- push the commit and the tag to GitHub
+- and finally unstash any changes if there were any
 
 If something goes wrong (f.e. an error during the build or test process), fear not, the package will
 not be published. Fix the failing tests, and try again. Note, after a failure, changes that were
