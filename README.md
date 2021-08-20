@@ -2,7 +2,7 @@
 
 Apply any number of functionalities ("behaviors") to an HTML element.
 
-#### `npm i element-behaviors --save`
+<h4><code><strong>npm install element-behaviors</strong></code></h4>
 
 For a basic example, see this live pen: https://codepen.io/trusktr/pen/ymPXNb
 
