@@ -80,7 +80,7 @@ class HasAttribute implements CustomAttribute {
 
 	observers = new Map<PossibleBehaviorInstance, MutationObserver>()
 	connectedBehaviors = new Set<PossibleBehaviorInstance>()
-	definePromises = new Map<string, CancelablePromise<void>>()
+	definePromises = new Map<string, CancelablePromise<CustomElementConstructor>>()
 
 	connectedCallback() {
 		this.behaviors = this.ownerElement.behaviors
