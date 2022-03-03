@@ -1,3 +1,5 @@
+import type {ElementWithBehaviors} from './index.js'
+
 describe('element-behaviors', () => {
 	it('exposes the library globally', () => {
 		expect(elementBehaviors).toBeInstanceOf(Object)
@@ -167,5 +169,41 @@ describe('element-behaviors', () => {
 		await new Promise(r => setTimeout(r))
 
 		expect(disconnectedCount).toBe(1, 'expected disconnectedCallback to be called once')
+	})
+
+	describe('has="" attribute', () => {
+		it('properly adds or removes behaviors when its value changes', async () => {
+			class One {}
+			elementBehaviors.define('one', One)
+
+			class Two {}
+			elementBehaviors.define('two', Two)
+
+			class Three {}
+			elementBehaviors.define('three', Three)
+
+			document.body.innerHTML = /*html*/ `
+				<div has="one two three"></div>
+			`
+
+			const div = document.body.firstElementChild as ElementWithBehaviors
+
+			// Defer so that MutationObserver has a chance to fire first.
+			await new Promise(r => setTimeout(r))
+
+			expect(div!.behaviors.size).toBe(3)
+
+			div.setAttribute('has', 'one three')
+
+			// Defer so that MutationObserver has a chance to fire first.
+			await new Promise(r => setTimeout(r))
+
+			expect(div!.behaviors.size).toBe(2)
+			expect(div!.behaviors.has('one')).toBeTrue()
+			expect(div!.behaviors.has('two')).toBeFalse()
+			expect(div!.behaviors.has('three')).toBeTrue()
+
+			document.body.innerHTML = ''
+		})
 	})
 })

@@ -67,7 +67,7 @@ Object.defineProperty(Element.prototype, 'behaviors', {
 	},
 })
 
-type ElementWithBehaviors = Element & {behaviors: BehaviorMap<string, PossibleBehaviorInstance>}
+export type ElementWithBehaviors = Element & {behaviors: BehaviorMap<string, PossibleBehaviorInstance>}
 
 // One instance of is instantiated per element with has="" attribute.
 class HasAttribute implements CustomAttribute {
