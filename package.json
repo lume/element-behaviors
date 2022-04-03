@@ -38,7 +38,7 @@
 		"@lume/cli": "^0.6.0",
 		"@lume/element": "^0.6.0",
 		"prettier": "^2.0.0",
-		"lowclass": "^4.9.3",
+		"lowclass": "^5.0.0",
 		"typescript": "4.4.3"
 	},
 	"peerDependencies": {
