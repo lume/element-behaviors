@@ -15,7 +15,13 @@ type PossibleBehaviorInstance = {
 	[k: number]: any
 }
 
-type PossibleBehaviorConstructor = Constructor<PossibleBehaviorInstance, [Element], {observedAttributes?: string[]}>
+type PossibleBehaviorConstructor = Constructor<
+	PossibleBehaviorInstance,
+	[ElementWithBehaviors],
+	{observedAttributes?: string[]}
+>
+
+const whenDefinedPromises: Map<string, Promise<void>> = new Map()
 
 class BehaviorRegistry {
 	protected _definedBehaviors = new Map<string, PossibleBehaviorConstructor>()
@@ -35,6 +41,24 @@ class BehaviorRegistry {
 	has(name: string) {
 		return this._definedBehaviors.has(name)
 	}
+
+	// TODO WIP, similar to customElements.whenDefined, so that code can wait for
+	// behaviors to be defined, which will help with load order issues when we
+	// set autoDefineElements to true by default in LUME (causes elements to be
+	// defined in module load order, which may not happen after all behaviors
+	// are loaded).
+	whenDefined(name: string) {
+		let resolve!: () => void
+		const p = new Promise<void>(r => (resolve = r))
+
+		if (!this.has(name)) {
+			whenDefinedPromises.set(name, p)
+		} else {
+			resolve()
+		}
+
+		return p
+	}
 }
 
 declare global {
@@ -46,8 +70,15 @@ declare global {
 
 export const elementBehaviors = (window.elementBehaviors = new BehaviorRegistry())
 
-// for semantic purpose
-class BehaviorMap<K, V> extends Map<K, V> {}
+export class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
+	find(predicate: (name: string, behavior: PossibleBehaviorInstance) => boolean) {
+		let result: PossibleBehaviorInstance | null = null
+
+		for (const [name, behavior] of this) if (predicate(name, behavior)) result = behavior
+
+		return result
+	}
+}
 
 // stores the behaviors associated to each element.
 const behaviorMaps = new WeakMap()
@@ -67,7 +98,9 @@ Object.defineProperty(Element.prototype, 'behaviors', {
 	},
 })
 
-export type ElementWithBehaviors = Element & {behaviors: BehaviorMap<string, PossibleBehaviorInstance>}
+export type ElementBehaviors = {behaviors: BehaviorMap}
+
+export type ElementWithBehaviors = Element & ElementBehaviors
 
 // One instance of is instantiated per element with has="" attribute.
 class HasAttribute implements CustomAttribute {
@@ -76,11 +109,11 @@ class HasAttribute implements CustomAttribute {
 	declare value: string
 	declare name: string
 
-	behaviors?: BehaviorMap<string, PossibleBehaviorInstance>
+	behaviors?: BehaviorMap
 
 	observers = new Map<PossibleBehaviorInstance, MutationObserver>()
 	connectedBehaviors = new Set<PossibleBehaviorInstance>()
-	definePromises = new Map<string, CancelablePromise<CustomElementConstructor>>()
+	elementDefinedPromises = new Map<string, CancelablePromise<CustomElementConstructor>>()
 
 	connectedCallback() {
 		this.behaviors = this.ownerElement.behaviors
@@ -91,8 +124,8 @@ class HasAttribute implements CustomAttribute {
 		this.changedCallback(this.value, '')
 		this.observers.clear()
 		this.connectedBehaviors.clear()
-		for (const [, promise] of this.definePromises) promise.cancel()
-		this.definePromises.clear()
+		for (const [, promise] of this.elementDefinedPromises) promise.cancel()
+		this.elementDefinedPromises.clear()
 		delete this.behaviors
 	}
 
@@ -163,17 +196,17 @@ class HasAttribute implements CustomAttribute {
 			// if the element is a custom element and the behavior specifies to wait for it to be defined
 			if (behavior.awaitElementDefined && tagName.includes('-')) {
 				const promiseId = name + '_' + tagName
-				let promise = this.definePromises.get(promiseId)
+				let promise = this.elementDefinedPromises.get(promiseId)
 
 				if (!promise) {
 					promise = new CancelablePromise(customElements.whenDefined(tagName.toLowerCase()), {
 						rejectOnCancel: false,
 					})
-					this.definePromises.set(promiseId, promise)
+					this.elementDefinedPromises.set(promiseId, promise)
 				}
 
 				promise.then(() => {
-					this.definePromises.delete(promiseId)
+					this.elementDefinedPromises.delete(promiseId)
 					this.connectedBehaviors.add(behavior)
 					behavior.connectedCallback && behavior.connectedCallback()
 				})
@@ -201,11 +234,11 @@ class HasAttribute implements CustomAttribute {
 			}
 
 			const promiseId = name + '_' + this.ownerElement.tagName
-			const promise = this.definePromises.get(promiseId)
+			const promise = this.elementDefinedPromises.get(promiseId)
 
 			if (promise) {
 				promise.cancel()
-				this.definePromises.delete(promiseId)
+				this.elementDefinedPromises.delete(promiseId)
 			}
 		}
 
