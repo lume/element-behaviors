@@ -35,7 +35,7 @@
 		"@lume/custom-attributes": "^0.1.2"
 	},
 	"devDependencies": {
-		"@lume/cli": "^0.6.0",
+		"@lume/cli": "^0.8.0",
 		"@lume/element": "^0.6.0",
 		"prettier": "^2.0.0",
 		"lowclass": "^5.0.0",
