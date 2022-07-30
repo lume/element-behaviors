@@ -29,16 +29,19 @@
 		"version": "lume versionHook",
 		"postversion": "lume postVersionHook",
 		"OTHER SCRIPTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "",
+		"examples": "live-server . --open=./examples",
 		"prepare": "npm run build"
 	},
 	"dependencies": {
-		"@lume/custom-attributes": "^0.1.2"
+		"@lume/custom-attributes": "^0.1.2",
+		"solid-js": "^1.4.0"
 	},
 	"devDependencies": {
 		"@lume/cli": "^0.9.0",
 		"@lume/element": "^0.6.0",
-		"prettier": "^2.0.0",
+		"live-server": "^1.2.2",
 		"lowclass": "^5.0.0",
+		"prettier": "^2.0.0",
 		"typescript": "4.4.3"
 	},
 	"peerDependencies": {
