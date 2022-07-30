@@ -1,17 +1,15 @@
 // export
 class ClickLogger {
 	constructor(element) {
-		this.element = element
+		this.onClick = () => console.log('clicked on element: ', element)
 	}
 
-	onClick = () => console.log('clicked on element: ', this.element)
-
-	connectedCallback() {
-		this.element.addEventListener('click', this.onClick)
+	connectedCallback(element) {
+		element.addEventListener('click', this.onClick)
 	}
 
-	disconnectedCallback() {
-		this.element.removeEventListener('click', this.onClick)
+	disconnectedCallback(element) {
+		element.removeEventListener('click', this.onClick)
 	}
 }
 
