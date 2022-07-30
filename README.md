@@ -14,80 +14,115 @@ the same as "entity components" in an
 
 The term "element behaviors" works better with HTML elements because the word "components" is
 already too widely adopted for things like Web Components, React Components, Vue Components, and
-components of various other web-baesd view libraries. In those libraries, "component" means a
+components of various other web-based view libraries. In those libraries, "component" means a
 specific building-block that is used in a specific way and not mixed onto other entities, which is
 not the same as the "components" in an entity-component system.
 
-To disambiguate and not cause confusion, enter "element behaviors".
+To disambiguate and not cause confusion, we use the term "element behaviors",
+which are similar to "components" in an entity-component pattern: behaviors are
+to HTML elements like components are to entities.
 
-## Mix behaviors onto any elements
+# Apply one or more behaviors onto HTML elements
 
 Element behaviors are useful for HTML elements in the same way that components are for entities in
-entity-component systems: any number of behaviors ("components" in ECS) can be applied to a given
-element ("entity" in ECS), and a specific behavior can be applied to any number elements.
+[entity-component systems (ECS)](https://en.wikipedia.org/wiki/Entity_component_system): any number of behaviors (i.e. components in ECS) can be applied to a given
+element (i.e. entity in ECS), and a specific behavior (component) can be applied to any number elements (entities).
 
 Element behaviors have lifecycle methods that are named the same as with
 [Custom Elements](https://developers.google.com/web/fundamentals/web-components/customelements) (be
-sure to read about that first if you don't know). This let's us react to the lifecycle events of an
-element just like the element itself can react to its own events.
+sure to read about Custom Elements first if you don't know). This let's us react to the lifecycle events of an
+element just like the element itself can react to its own life cycle events.
 
-## What for?
+# What for?
 
-To help spark your imagination, this is what you might do with Element Behaviors:
+Element Behaviors can be used as an alternative to Custom Elements, especially in cases where Custom Elements cannot be used at all.
+
+For example, Custom Elements do not work with SVG because Custom Elements cannot
+extend from `SVGElement`, and special `HTMLElement`s like `<table>` and `<tr>`
+can not be extended by Custom Elements in all browsers (Safari does not support
+the `is=""` attribute).
+
+This is where Element Behaviors are advantageous: they do not need to extend
+from any base class, and one or more behaviors can be used on any type of
+elements, whether they are SVG or table elements, etc:
 
 ```html
-<!-- a Minecraft-like game -->
+<table has="click-logger">
+	<tr has="coolness awesomeness">
+		...
+	</tr>
+</table>
+<svg has="some-behavior">
+	<rect has="other-behavior"></rect>
+</svg>
+```
+
+This works great for progressive enhancement where `<svg>` and `<table>`
+elements will work fine without JavaScript (or prior to JavaScript being
+loaded), and Element Behaviors can augment the elements when JavaScript is
+available.
+
+To help spark your imagination, this is what you might do with Element
+Behaviors. Suppose we are making a Minecraft-like game:
+
+```html
 <ender-man has="player-aware holds-block" holds="dirt" position="30 30 30"></ender-man>
 
-<!-- uh oh! The enderman is aware of the player, run!  -->
+<!-- uh oh! The enderman is aware of the player, run!...  -->
 <play-er position="40 40 30"></play-er>
 ```
 
 ```html
 <!-- ...the player got away from the enderman, and found diamond armor and a horse -->
 <ender-man has="holds-block" holds="sand" position="-20 38 40"></ender-man>
-<play-er has="diamond-armor horse-inventory" position="100 150 40"></play-er>
+<play-er has="diamond-helmet diamond-footwear horse" position="100 150 40"></play-er>
 ```
 
-## How
+# How
 
-To illustrate with a small example, let's suppose we want to add a behavior to a wide variety of
-elements in an application, and that the behavior will simply log to the console whenever the
-element is clicked.
+To illustrate with a small example, let's suppose we want to add a behavior to a
+wide variety of elements in an application, and that the behavior will simply
+log to the console whenever the element is clicked.
 
-Unlike Custom Elements that need to extend from HTMLElement, Element Behaviors do not need to extend
-from any class, and unlike Custom Element lifecycle methods, Element Behavior methods all accept a
-first argument `element` which is the element onto which the instance of the behavior is applied.
+Unlike Custom Elements that need to extend from `HTMLElement`, Element Behaviors
+do not need to extend from any class, and similar to but unlike Custom Element
+lifecycle methods, Element Behavior lifecycle methods all accept a first
+argument `element` which is the element onto which the instance of the behavior
+is applied.
 
-So, let's define the behavior:
+Let's define a `ClickLogger` behavior:
 
 ```html
 <script>
-	// define an element behavior class
+	// First define an element behavior class.
 	class ClickLogger {
+		// The constructor accepts the `element` in its first parameter.
 		constructor(element) {
 			this.handler = () => {
 				console.log('Clicked an element: ', element)
 			}
 		}
 
-		// called when the `element` is added to the DOM
+		// This is called when the `element` is added to the DOM, passed in the `element`.
 		connectedCallback(element) {
+			// Here we create a click handler.
 			element.addEventListener('click', this.handler)
 		}
 
-		// called when the `element` is removed from the DOM
+		// This is called when the `element` is removed from the DOM, passed in the `element`.
 		disconnectedCallback(element) {
+			// Don't forget to clean up!
 			element.removeEventListener('click', this.handler)
 		}
 	}
 
-	// define the behavior with the class
+	// Define the behavior with our class.
 	elementBehaviors.define('click-logger', ClickLogger)
 </script>
 ```
 
-Then, we use the new `has=""` attribute to specify which behaviors any element has:
+Now we can use the `has=""` attribute to specify which behaviors an element has,
+and in this case we'll give multiple elements the `click-logger` behavior:
 
 ```html
 <div has="click-logger">one</div>
@@ -96,48 +131,65 @@ Then, we use the new `has=""` attribute to specify which behaviors any element h
 ```
 
 That's all that we need to do! For each DOM element created that has the specified behavior, an
-instance of the behavior will be constructed.
+instance of the behavior will be constructed, and will log to console any time the elements are clicked.
 
-## API
+An example of that is in [`examples/clicks/`](./examples/clicks/index.html).
+
+# Examples
+
+To run examples like the previous `ClickLogger`, run
+
+```sh
+npm install
+npm run examples
+```
+
+This opens a tab in your browser. Then, for example, click on the `clicks/`
+folder to see the [`examples/clicks/index.html`](./examples/clicks/index.html)
+file in action.
+
+# API
 
 The API is simple. If you know Custom Elements, then you basically know Element Behaviors.
 
-### Behavior class
+## Behavior classes
 
-The following is a class showing the methods that are automatically called for a behavior instance
-based on the lifecycle of the element that the behavior is added to. The first argument received by
-each method is the element that has the behavior:
+The following is a class showing the APIs that a behavior class can have, in a
+fashion similar to Custom Elements, with an additional `static awaitElementDefined` property. The first argument received by each lifecycle
+method is the `element` that has the behavior on it:
 
 ```js
 class SomeBehavior {
-	// called only once, given the element that the behavior is attached to
+	// This is called only once, given the element that the behavior is attached to.
 	constructor(element) {}
 
-	// called any time the associated `element` is added to the DOM
+	// This is called any time the associated `element` is appended into the DOM.
 	connectedCallback(element) {}
 
-	// called any time the associated `element` is removed from the DOM
+	// This is called any time the associated `element` is removed from the DOM.
 	disconnectedCallback(element) {}
 
-	// as with custom elements, define which attributes of the associated element that the behavior reacts to
-	static get observedAttributes() {
-		return [
-			/* ... */
-		]
-	}
+	// As with custom elements, define which attributes of the associated
+	// element that the behavior should react to.
+	static observedAttributes = ['some-attribute', 'other-attribute']
 
-	// called any time an observed attribute of the associated element has been changed
+	// This is called any time any of the `observedAttributes` of the associated element have been changed.
 	attributeChangedCallback(element, attributeName, oldValue, newValue) {}
 
-	// There is one additional API. If static awaitElementDefined is true, then
-	// the behavior will not be insntiated and connected until its host element
-	// (if it is a custom element with a hyphen in its name) is defined and
-	// upgraded.
+	// There is one additional API, unlike with Custom Elements. If `static
+	// awaitElementDefined` is `true`, then the behavior will not be
+	// instantiated and connected until its host element is defined and upgraded
+	// (that is, if the host element is possibly a custom element, having a
+	// hyphen in its name). If the host element has no hyphen in its name, then
+	// this does not apply, and the behavior will be created and connected
+	// immediately without waiting. If a possibly-custom element is removed
+	// before it is defined, then a behavior will not be created and connected
+	// at all (waiting will have been canceled).
 	static awaitElementDefined = true // Default is false.
 }
 ```
 
-### `elementBehaviors.define()`
+## `elementBehaviors.define()`
 
 Similar to `customElements`, `elementBehaviors` is a global with a `define()` method.
 
@@ -148,15 +200,19 @@ behavior.
 Define a behavior, by associating a behavior name with a class:
 
 ```js
+class SomeBehavior {
+	/* ... */
+}
+
 elementBehaviors.define('some-behavior', SomeBehavior)
 ```
 
 And now the behavior can be used.
 
-### The `has=""` attribute
+## The `has=""` attribute
 
-To use behaviors, the special `has=""` attribute is used on any elements to specify which behaviors
-they have.
+To use behaviors, the special `has=""` attribute is used on desired elements to specify which behaviors
+they should have.
 
 Apply a behavior to an element:
 
@@ -166,7 +222,7 @@ Apply a behavior to an element:
 
 Any number of behaviors can be applied to an element. If we define three behaviors, "foo", "bar",
 and "baz" using `elementBehaviors.define()`, we can apply all of them to an element as a
-space-separated list in the `has` attribute:
+space-separated list in the element's `has` attribute:
 
 ```html
 <script>
@@ -189,8 +245,9 @@ space-separated list in the `has` attribute:
 <div has="foo bar baz">one</div>
 ```
 
-Behaviors can be added and removed from elements at any time. For example, suppose we want to remove
-the "baz" behavior from the previous `div`, and add "click-logger":
+Behaviors can be added and removed from elements at any time. For example,
+suppose we want to remove the "baz" behavior from the previous `div`, and add
+"click-logger". We can do so by changing the value of the `has=""` attribute:
 
 ```js
 const div = document.querySelector('div')
@@ -198,19 +255,21 @@ const div = document.querySelector('div')
 div.setAttribute('has', 'foo bar click-logger')
 ```
 
-The new value of the `has` attribute no longer has "baz" and now has "click-logger". The Baz
-behavior will have its `disconnectedCallback()` method called for cleanup, while the a
-`new ClickLogger` instance will be constructed and have its `connectedCallback()` method called.
+The new value of the `has` attribute no longer has "baz" and now has
+"click-logger". The `Baz` behavior will have its `disconnectedCallback()` method
+called for cleanup, while a `new ClickLogger` instance will be constructed and
+have its `connectedCallback()` method called.
 
 > **Note**
-> If you were to call `div.setAttribute('has', 'click-logger')` thinking that you were adding
-> the "click-logger" behavior, you will have removed all three "foo", "bar", and "baz" behaviors
-> because the new `has` attribute is `has="click-logger"`.
+> If you were to call `div.setAttribute('has', 'click-logger')` thinking that you
+> were adding the `click-logger` behavior, you will have removed all three `foo`,
+> `bar`, and `baz` behaviors and the element will have only a `click-logger`
+> behavior because the new `has` attribute is `has="click-logger"`.
 
-### `Element.prototype.behaviors`
+## `Element.prototype.behaviors`
 
 All elements have a new `.behaviors` property that returns a map of strings to
-behavior instances. This makes it easy to get a behavior from an element to
+behavior instances. This makes it easy to get a behavior instance from an element to
 interact with its APIs as needed. For example:
 
 ```html
@@ -224,20 +283,38 @@ interact with its APIs as needed. For example:
 	const behavior = el.behaviors.get('some-behavior')
 
 	// do something with `behavior`
+
+	// Map.forEach
+	el.behaviors.forEach((behavior, behaviorName) => {
+		console.log('behavior:', behaviorName, behavior)
+	})
+
+	// It is iterable.
+	for (const [behaviorName, behavior] of el.behaviors) {
+		console.log('behavior:', behaviorName, behavior)
+	}
 </script>
 ```
 
-The `.behaviors` property is reactive using Solid.js APIs. It can be taken advantage of by first installing `solid-js`,
+### Solid.js Reactivity
+
+The `.behaviors` property is reactive using [Solid.js](https://www.solidjs.com)
+APIs, meaning we can react to changes in behaviors.
+
+This can be taken advantage of by first installing `solid-js`,
 
 ```sh
 npm install solid-js
 ```
 
-Then in your app:
+Then in your app you can use `el.behaviors` APIs in a reactive context such as a
+JSX template, or in an effect:
 
 ```js
 import {createEffect} from 'solid-js'
 
+// This effect will re-run any time the values of
+// `el.behaviors.get('some-behavior')` or `behavior.count` change.
 createEffect(() => {
 	const behavior = el.behaviors.get('some-behavior') // reactive
 
@@ -245,12 +322,12 @@ createEffect(() => {
 
 	// Log the count any time it changes:
 
-	// Assume in this example that behavior.count is also a reactive (signal) property:
+	// Assume in this example that behavior.count is a reactive (signal) property:
 	console.log(behavior.count) // reactive
 })
 ```
 
-### `DefaultBehaviors` (in LUME)
+## `DefaultBehaviors` (in LUME)
 
 [LUME](https://lume.io) (a 3D HTML toolkit) uses Element Behaviors, and provides an
 additional
@@ -329,7 +406,7 @@ When the `my-el` elements are created, only the one without the `another-behavio
 <my-el has="some-behavior click-logger"></my-el>
 ```
 
-## Notes
+# Notes
 
 - See this [long issue](https://github.com/w3c/webcomponents/issues/509) on w3c's webcomponents repo,
   which led to [the issue](https://github.com/w3c/webcomponents/issues/662) where the idea for element-behaviors was born,
@@ -338,7 +415,7 @@ When the `my-el` elements are created, only the one without the `another-behavio
 - Uses [custom-attributes](https://github.com/lume/custom-attributes) (originally by @matthewp, forked in LUME) to
   implement the `has=""` attribute.
 
-## Contributing
+# Contributing
 
 First install dependencies:
 
@@ -346,7 +423,7 @@ First install dependencies:
 npm install
 ```
 
-### Code
+## Code
 
 Source files are written in TypeScript, ending in `.ts`.
 
@@ -356,7 +433,7 @@ editor out there. Also install a [Prettier](https://prettier.io) plugin for
 your editor, and have it auto format on save. Tests will fail if the formatting
 check does not pass.
 
-### Development build mode
+## Development build mode
 
 Run the package in dev mode (it will rebuild when files change):
 
@@ -367,7 +444,7 @@ npm run dev
 This watches files and automatically incrementally rebuilds the project when any files in `src/`
 have changed.
 
-### Production build
+## Production build
 
 To build the package for production, run
 
@@ -375,7 +452,7 @@ To build the package for production, run
 npm run build
 ```
 
-### Testing
+## Testing
 
 Any files ending with `.test.ts` anywhere in the `tests/` or `src/` folders are test
 files that will be ran by [Karma](https://karma-runner.github.io), the test runner.
@@ -394,7 +471,7 @@ so, run:
 npm run test-debug
 ```
 
-### Publishing a new version
+## Publishing a new version
 
 When ready to publish a new version, run one of the following depending on which part of the version
 number you want to increment (see [SemVer](https://semver.org/) for conventions around version
