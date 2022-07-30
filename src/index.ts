@@ -1,4 +1,6 @@
 import {customAttributes, CustomAttributeRegistry, CustomAttribute} from '@lume/custom-attributes/dist/index.js'
+import {$TRACK} from 'solid-js'
+import {createMutable, modifyMutable, reconcile} from 'solid-js/store'
 
 import type {Constructor} from 'lowclass'
 
@@ -7,7 +9,6 @@ import type {Constructor} from 'lowclass'
 // DOM. Make it order-independent.
 
 type PossibleBehaviorInstance = {
-	awaitElementDefined?: boolean
 	connectedCallback?: () => void
 	disconnectedCallback?: () => void
 	attributeChangedCallback?: (attr: string, oldValue: string | null, newValue: string | null) => void
@@ -18,7 +19,7 @@ type PossibleBehaviorInstance = {
 type PossibleBehaviorConstructor = Constructor<
 	PossibleBehaviorInstance,
 	[ElementWithBehaviors],
-	{observedAttributes?: string[]}
+	{awaitElementDefined?: boolean; observedAttributes?: string[]}
 >
 
 const whenDefinedPromises: Map<string, Promise<void>> = new Map()
@@ -70,13 +71,118 @@ declare global {
 
 export const elementBehaviors = (window.elementBehaviors = new BehaviorRegistry())
 
+/**
+ * A map of behavior names to their defined classes.
+ *
+ * Reactive in Solid.js.
+ */
 export class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
-	find(predicate: (name: string, behavior: PossibleBehaviorInstance) => boolean) {
-		let result: PossibleBehaviorInstance | null = null
+	#reactivityTriggerObject = createMutable<Record<string, PossibleBehaviorInstance>>({})
 
-		for (const [name, behavior] of this) if (predicate(name, behavior)) result = behavior
+	find(predicate: (name: string, behavior: PossibleBehaviorInstance) => boolean) {
+		let result: PossibleBehaviorInstance | undefined = void undefined
+
+		for (const [name, behavior] of this) {
+			if (!predicate(name, behavior)) continue
+			result = behavior
+			break
+		}
 
 		return result
+	}
+
+	override get(key: string): PossibleBehaviorInstance | undefined {
+		// read, causes tracking in Solid.js effects.
+		this.#reactivityTriggerObject[key]
+
+		return super.get(key)
+	}
+
+	override set(key: string, value: PossibleBehaviorInstance): this {
+		queueMicrotask(() => {
+			// write, triggers Solid.js effects
+			this.#reactivityTriggerObject[key] = value
+		})
+
+		super.set(key, value)
+		return this
+	}
+
+	override delete(key: string): boolean {
+		queueMicrotask(() => {
+			// write, triggers Solid.js effects
+			delete this.#reactivityTriggerObject[key]
+		})
+
+		return super.delete(key)
+	}
+
+	override clear(): void {
+		queueMicrotask(() => {
+			// delete all properties, trigger single Solid.js effect update
+			modifyMutable(this.#reactivityTriggerObject, reconcile({}))
+		})
+
+		super.clear()
+	}
+
+	override has(key: string): boolean {
+		// read, causes tracking in Solid.js effects.
+		// (TODO `in` operator not reactive yet, https://github.com/solidjs/solid/issues/1107)
+		// key in this.#reactivityTriggerObject
+		// Workaround, read the property
+		this.#reactivityTriggerObject[key]
+
+		return super.has(key)
+	}
+
+	override entries(): IterableIterator<[string, PossibleBehaviorInstance]> {
+		// track all properties in a Solid effect
+		// @ts-expect-error
+		this.#reactivityTriggerObject[$TRACK]
+
+		return super.entries()
+	}
+
+	override [Symbol.iterator](): IterableIterator<[string, PossibleBehaviorInstance]> {
+		// track all properties in a Solid effect
+		// @ts-expect-error
+		this.#reactivityTriggerObject[$TRACK]
+
+		return super[Symbol.iterator]()
+	}
+
+	override forEach(
+		callbackfn: (value: PossibleBehaviorInstance, key: string, map: Map<string, PossibleBehaviorInstance>) => void,
+		thisArg?: any,
+	): void {
+		// track all properties in a Solid effect
+		// @ts-expect-error
+		this.#reactivityTriggerObject[$TRACK]
+
+		super.forEach(callbackfn, thisArg)
+	}
+
+	override keys(): IterableIterator<string> {
+		// track all properties in a Solid effect
+		// @ts-expect-error
+		this.#reactivityTriggerObject[$TRACK]
+
+		return super.keys()
+	}
+
+	override get size(): number {
+		// track all properties in a Solid effect
+		// @ts-expect-error
+		this.#reactivityTriggerObject[$TRACK]
+
+		return super.size
+	}
+	override set size(n: number) {
+		// @ts-expect-error readonly property according to TS, but in JS it is
+		// assignable though nothing happens. We need this so that the property
+		// behaves the same after we override it.
+		super.size = n
 	}
 }
 
@@ -109,35 +215,42 @@ class HasAttribute implements CustomAttribute {
 	declare value: string
 	declare name: string
 
-	behaviors?: BehaviorMap
+	get behaviors() {
+		return this.ownerElement.behaviors
+	}
 
 	observers = new Map<PossibleBehaviorInstance, MutationObserver>()
-	connectedBehaviors = new Set<PossibleBehaviorInstance>()
 	elementDefinedPromises = new Map<string, CancelablePromise<CustomElementConstructor>>()
 
+	isConnected = false // TODO move to base class
+
 	connectedCallback() {
-		this.behaviors = this.ownerElement.behaviors
+		this.isConnected = true
 		this.changedCallback('', this.value)
 	}
 
 	disconnectedCallback() {
+		this.isConnected = false
+		this.#skipConnectedCheck = true
 		this.changedCallback(this.value, '')
-		this.observers.clear()
-		this.connectedBehaviors.clear()
-		for (const [, promise] of this.elementDefinedPromises) promise.cancel()
-		this.elementDefinedPromises.clear()
-		delete this.behaviors
+		this.#skipConnectedCheck = false
 	}
 
-	changedCallback(_oldVal: string, newVal: string) {
-		const newBehaviors = this.getBehaviorNames(newVal)
-		const previousBehaviors = Array.from(this.behaviors!.keys())
+	#skipConnectedCheck = false
+
+	changedCallback(oldVal: string, newVal: string) {
+		if (!this.#skipConnectedCheck) {
+			if (!this.isConnected) return
+		}
+
+		const currentBehaviors = this.getBehaviorNames(newVal)
+		const previousBehaviors = this.getBehaviorNames(oldVal)
 
 		// small optimization: if no previous or new behaviors, just quit
 		// early. It would still function the same without this.
-		if (newBehaviors.length == 0 && previousBehaviors.length == 0) return
+		if (currentBehaviors.length == 0 && previousBehaviors.length == 0) return
 
-		const {removed, added} = this.getDiff(previousBehaviors, newBehaviors)
+		const {removed, added} = this.getDiff(previousBehaviors, currentBehaviors)
 		this.handleDiff(removed, added)
 	}
 
@@ -146,10 +259,10 @@ class HasAttribute implements CustomAttribute {
 		else return string.split(/\s+/)
 	}
 
-	private getDiff(previousBehaviors: string[], newBehaviors: string[]) {
+	private getDiff(previousBehaviors: string[], currentBehaviors: string[]) {
 		const diff = {
 			removed: [] as string[],
-			added: newBehaviors,
+			added: currentBehaviors,
 		}
 
 		for (let i = 0, l = previousBehaviors.length; i < l; i += 1) {
@@ -177,74 +290,67 @@ class HasAttribute implements CustomAttribute {
 		for (const name of added) this.connectBehavior(name)
 	}
 
-	private connectBehavior(name: string) {
+	private async connectBehavior(name: string) {
 		const Behavior = elementBehaviors.get(name)
 
 		if (!Behavior) return
 
-		const behavior = new Behavior(this.ownerElement)
-		this.behaviors!.set(name, behavior)
+		const observedAttributes = Behavior.observedAttributes
 
-		// read observedAttributes first, in case anything external fires
-		// logic in the getter and expects it to happen before any
-		// lifecycle methods (f.e. a library like SkateJS)
-		const observedAttributes = (behavior.constructor as PossibleBehaviorConstructor).observedAttributes
+		const tagName = this.ownerElement.tagName
 
-		if (this.ownerElement.isConnected) {
-			const tagName = this.ownerElement.tagName
-
+		try {
 			// if the element is a custom element and the behavior specifies to wait for it to be defined
-			if (behavior.awaitElementDefined && tagName.includes('-')) {
+			if (Behavior.awaitElementDefined && tagName.includes('-') && !customElements.get(tagName.toLowerCase())) {
 				const promiseId = name + '_' + tagName
 				let promise = this.elementDefinedPromises.get(promiseId)
 
 				if (!promise) {
 					promise = new CancelablePromise(customElements.whenDefined(tagName.toLowerCase()), {
-						rejectOnCancel: false,
+						rejectOnCancel: true,
 					})
 					this.elementDefinedPromises.set(promiseId, promise)
 				}
 
-				promise.then(() => {
-					this.elementDefinedPromises.delete(promiseId)
-					this.connectedBehaviors.add(behavior)
-					behavior.connectedCallback && behavior.connectedCallback()
-				})
-			} else {
-				this.connectedBehaviors.add(behavior)
-				behavior.connectedCallback && behavior.connectedCallback()
+				await promise
+				this.elementDefinedPromises.delete(promiseId)
 			}
-		}
 
-		if (Array.isArray(observedAttributes) && observedAttributes.length) {
-			this.fireInitialAttributeChangedCallbacks(behavior, observedAttributes)
-			this.createAttributeObserver(behavior)
+			if (this.isConnected) {
+				const behavior = new Behavior(this.ownerElement)
+				this.behaviors.set(name, behavior)
+				behavior.connectedCallback?.()
+
+				if (Array.isArray(observedAttributes) && observedAttributes.length) {
+					this.fireInitialAttributeChangedCallbacks(behavior, observedAttributes)
+					this.createAttributeObserver(behavior)
+				}
+			}
+		} catch (e) {
+			if (!(e instanceof PromiseCancellation)) throw e
+
+			// do nothing if promise canceled
 		}
 	}
 
 	private disconnectBehavior(name: string) {
-		const behavior = this.behaviors!.get(name)
+		const promiseId = name + '_' + this.ownerElement.tagName
+		const promise = this.elementDefinedPromises.get(promiseId)
 
-		if (!behavior) return
-
-		{
-			if (this.connectedBehaviors.has(behavior)) {
-				behavior.disconnectedCallback && behavior.disconnectedCallback()
-				this.connectedBehaviors.delete(behavior)
-			}
-
-			const promiseId = name + '_' + this.ownerElement.tagName
-			const promise = this.elementDefinedPromises.get(promiseId)
-
-			if (promise) {
-				promise.cancel()
-				this.elementDefinedPromises.delete(promiseId)
-			}
+		if (promise) {
+			promise.cancel()
+			this.elementDefinedPromises.delete(promiseId)
 		}
 
-		this.destroyAttributeObserver(behavior)
+		const behavior = this.behaviors.get(name)
 
-		this.behaviors!.delete(name)
+		// There will only be a behavior if connectBehavior both created it and
+		// ran its connectedCallback.
+		if (!behavior) return
+
+		behavior.disconnectedCallback?.()
+		this.destroyAttributeObserver(behavior)
+		this.behaviors.delete(name)
 	}
 
 	destroyAttributeObserver(behavior: PossibleBehaviorInstance) {

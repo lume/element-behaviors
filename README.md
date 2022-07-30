@@ -128,6 +128,12 @@ class SomeBehavior {
 
 	// called any time an observed attribute of the associated element has been changed
 	attributeChangedCallback(element, attributeName, oldValue, newValue) {}
+
+	// There is one additional API. If static awaitElementDefined is true, then
+	// the behavior will not be insntiated and connected until its host element
+	// (if it is a custom element with a hyphen in its name) is defined and
+	// upgraded.
+	static awaitElementDefined = true // Default is false.
 }
 ```
 
@@ -196,89 +202,112 @@ The new value of the `has` attribute no longer has "baz" and now has "click-logg
 behavior will have its `disconnectedCallback()` method called for cleanup, while the a
 `new ClickLogger` instance will be constructed and have its `connectedCallback()` method called.
 
-> Note! If you were to call `div.setAttribute('has', 'click-logger')` thinking that you were adding
+> **Note**
+> If you were to call `div.setAttribute('has', 'click-logger')` thinking that you were adding
 > the "click-logger" behavior, you will have removed all three "foo", "bar", and "baz" behaviors
-> because the new `has` attribute is `has="click-loger"`.
+> because the new `has` attribute is `has="click-logger"`.
 
-### Element.behaviors (WIP)
+### `Element.prototype.behaviors`
 
-To make it easier to add and remove behaviors, there will be an API similar to
-[`Element.classList`](https://developer.mozilla.org/en-US/docs/Web/API/Element/classList), but
-called `Element.behaviors`. This will prevent us from having to wrangle with strings when setting
-the `has` attribute. Just like with `classList`, modifying `behaviors` would also update the
-`has=""` attribute value. For example:
+All elements have a new `.behaviors` property that returns a map of strings to
+behavior instances. This makes it easy to get a behavior from an element to
+interact with its APIs as needed. For example:
 
-```js
-const el = document.querySelector('div')
+```html
+<div has="some-behavior"></div>
 
-// suppose we have <div has="foo bar baz">
+<script>
+	// Get the element
+	const el = document.querySelector('[has=some-behavior]')
 
-el.behaviors.add('click-logger')
-el.behaviors.remove('foo')
+	// Get the behavior from the element
+	const behavior = el.behaviors.get('some-behavior')
 
-// now we have <div has="bar baz click-logger">
+	// do something with `behavior`
+</script>
 ```
 
-I am wondering if `.behaviors` should be a property on all elements, or if behaviors should be
-stored in a global map. For example:
+The `.behaviors` property is reactive using Solid.js APIs. It can be taken advantage of by first installing `solid-js`,
 
-```js
-elementBehaviors.of(el).add('click-logger')
-elementBehaviors.of(el).remove('baz')
+```sh
+npm install solid-js
 ```
 
-I currently have this add/remove functionality implemented
-[here](https://github.com/lume/lume/blob/v18.0.10/src/html/behaviors/DefaultBehaviors.js), as
-part of LUME, but this is not standlone yet.
-
-If you have any thoughts on this API, please
-[let me know](https://github.com/trusktr/element-behaviors/issues/1)!
-
-### Default behaviors (WIP)
-
-I'm not sure if this should be included here. Maybe it should end up in a separate library built on
-top of element-behaviors, but I'm placing the idea here, for now.
-
-The
-[DefaultBehaviorsMixin](https://github.com/lume/lume/blob/v18.0.10/src/html/behaviors/DefaultBehaviors.js)
-of LUME gives Custom Element classes the ability to define which behaviors they ship with by
-default, which is super useful!
-
-To define a Custom Element with default behaviors, it is done similarly to `observedAttributes`:
+Then in your app:
 
 ```js
-class SomeElement extends DefaultBehaviorsMixin(HTMLElement) {
-	// If you know how to define observed attributes on your Custom Element,
+import {createEffect} from 'solid-js'
+
+createEffect(() => {
+	const behavior = el.behaviors.get('some-behavior') // reactive
+
+	if (!behavior) return
+
+	// Log the count any time it changes:
+
+	// Assume in this example that behavior.count is also a reactive (signal) property:
+	console.log(behavior.count) // reactive
+})
+```
+
+### `DefaultBehaviors` (in LUME)
+
+[LUME](https://lume.io) (a 3D HTML toolkit) uses Element Behaviors, and provides an
+additional
+[`DefaultBehaviors`](https://github.com/lume/lume/blob/v0.3.0-alpha.14/src/behaviors/DefaultBehaviors.ts)
+mixin class that gives Custom Element classes the ability to define which
+behaviors they ship with by
+default, which is super handy!
+
+To use it first install `lume`:
+
+```sh
+npm install lume
+```
+
+To define a Custom Element with default behaviors, it is done similarly to with `observedAttributes`:
+
+```js
+import {DefaultBehaviors} from 'lume/dist/behaviors/DefaultBehaviors.js'
+
+class SomeElement extends DefaultBehaviors(HTMLElement) {
+	// Define observed attributes
 	static get observedAttributes() {
 		return ['some-attribute', 'other-attribute']
 	}
 
-	// then you can basically do the same to define default behaviors:
+	// Define default behaviors that the element will have
 	static get defaultBehaviors() {
 		return ['some-behavior', 'click-logger']
 	}
 }
 ```
 
-Additionally, `defaultBehaviors` can return an object whose key names are behavior names, and whose
-values are functions that return true or false to determine if a default behavior should be
-initially added to the element or not. The function will receive the element, as well as intial
-behaviors that the element already has defined by the `has=""` attribute when the element is
-created.
+Additionally, the `static defaultBehaviors` property can return an object whose
+key names are behavior names, and whose values are functions that return true or
+false to determine if a default behavior should be initially added to the
+element or not. The function will receive the element, as well as intial
+behaviors that the element already has defined by the `has=""` attribute when
+the element is created.
 
 For example, suppose we have the following HTML:
 
+<!-- prettier-ignore -->
 ```html
-<my-div has="another-behavior"></my-div> <my-div has="some-behavior"></my-div>
+<my-el has="another-behavior"></my-el>
+<my-el has="some-behavior"></my-el>
 ```
 
-and we define a Custom Element like:
+We define a Custom Element like:
 
 ```js
-class SomeElement extends DefaultBehaviorsMixin(HTMLElement) {
+class MyEl extends DefaultBehaviors(HTMLElement) {
 	static get defaultBehaviors() {
 		return {
 			'click-logger': (element, initialBehaviors) => {
+				// For sake of example, suppose that if the element has
+				// `another-behavior`, then we do not want it to have the `click-logger`
+				// behavior:
 				if (initialBehaviors.includes('another-behavior')) {
 					return false
 				}
@@ -287,41 +316,27 @@ class SomeElement extends DefaultBehaviorsMixin(HTMLElement) {
 		}
 	}
 }
+
+customElements.define('my-el', MyEl)
 ```
 
-then when the `my-div` elements are created, only the one without the `another-behavior` will have
+When the `my-el` elements are created, only the one without the `another-behavior` will have
 `click-logger` added to it, so the resulting DOM will be as follows:
 
+<!-- prettier-ignore -->
 ```html
-<my-div has="another-behavior"></my-div> <my-div has="some-behavior click-logger"></my-div>
+<my-el has="another-behavior"></my-el>
+<my-el has="some-behavior click-logger"></my-el>
 ```
 
-## Note
+## Notes
 
-See this [long issue](https://github.com/w3c/webcomponents/issues/509) on w3c's webcomponents repo,
-which led to [the issue](https://github.com/w3c/webcomponents/issues/662) where the idea was born,
-with some ideas from this [other issue](https://github.com/w3c/webcomponents/issues/663) (thanks to
-all who helped to discuss the idea!).
-
-## Caveats
-
-Unless you run this in a modern browser, then:
-
-- Requires MutationObserver, you'll need a polyfill for older browsers.
-- Requires Map, you'll need a polyfill for older browsers.
-- Extends native builtin classes using `class` syntax, so you'll need
-  babel-transform-builtin-extends for older browsers. Babel 7 includes this by default, but it
-  [doesn't work yet](https://github.com/babel/babel/pull/7020#issuecomment-362113864), and Babel 7
-  is still in Beta.
-- This package is currently written in ES6+ code, and not transpiled. You'll need to transpile
-  yourself for older browsers. Meteor 1.6.2+ allows transpiling of node_modules, and you can also
-  configure Webpack and other tools to transpile things in node_modules.
+- See this [long issue](https://github.com/w3c/webcomponents/issues/509) on w3c's webcomponents repo,
+  which led to [the issue](https://github.com/w3c/webcomponents/issues/662) where the idea for element-behaviors was born,
+  with some ideas from this [other issue](https://github.com/w3c/webcomponents/issues/663) (thanks to
+  all who helped to discuss the idea!).
 - Uses [custom-attributes](https://github.com/lume/custom-attributes) (originally by @matthewp, forked in LUME) to
-  implement the `has=""` attribute. You might need more polyfills and/or to transpile that project
-  too.
-
-Otherwise, this should work fine in all the latest versions of Chrome, Firefox, Edge, Safari, and
-Opera (and probably other lesser-known browsers too).
+  implement the `has=""` attribute.
 
 ## Contributing
 
@@ -333,12 +348,13 @@ npm install
 
 ### Code
 
-Code files can be written in either JavaScript or TypeScript, and end in either `.js` or `.ts`
-respectively.
+Source files are written in TypeScript, ending in `.ts`.
 
-Please make sure your editor obeys the rules in `.editorconfig`. There are editorconfig plugins for
-just about every text editor out there. Please install it and make sure code follows the formatting
-rules. For more info, see https://editorconfig.org.
+Please make sure your editor obeys the format rules in `.editorconfig`. There
+are [Editorconfig](https://editorconfig.org) plugins for just about every text
+editor out there. Also install a [Prettier](https://prettier.io) plugin for
+your editor, and have it auto format on save. Tests will fail if the formatting
+check does not pass.
 
 ### Development build mode
 
@@ -361,10 +377,10 @@ npm run build
 
 ### Testing
 
-Any files ending with `.test.js` or `.test.ts` anywhere in the `tests/` or `src/` folders are test
-files that will be ran by Karma, the test runner.
+Any files ending with `.test.ts` anywhere in the `tests/` or `src/` folders are test
+files that will be ran by [Karma](https://karma-runner.github.io), the test runner.
 
-To run tests:
+To run tests (which will both check code format and run unit tests):
 
 ```sh
 npm test
@@ -404,6 +420,9 @@ Any of the three `release:*` scripts will:
 - push the commit and the tag to GitHub
 - and finally unstash any changes if there were any
 
-If something goes wrong (f.e. an error during the build or test process), fear not, the package will
-not be published. Fix the failing tests, and try again. Note, after a failure, changes that were
-stashed will remain stashed.
+> **Note**
+> If something goes wrong (f.e. an error during the build or test process), fear
+> not, the package will not be published. Fix the failing tests, and try again.
+
+> **Note**
+> After a failure, changes that were stashed will remain stashed.

@@ -30,12 +30,14 @@ describe('element-behaviors', () => {
 
 		let attrChangedCount = 0
 		const attrChangedArgs: any[] = []
+		let constructCount = 0
 		let connectedCount = 0
 		let disconnectedCount = 0
 
 		class Awesomeness {
 			constructor(public el: Element) {
 				expect(this.el).toBe(div)
+				constructCount++
 			}
 
 			static observedAttributes = ['foo']
@@ -67,6 +69,7 @@ describe('element-behaviors', () => {
 
 		await new Promise(r => setTimeout(r))
 
+		expect(constructCount).toBe(1)
 		expect(connectedCount).toBe(1)
 
 		await new Promise(r => setTimeout(r))
@@ -93,6 +96,39 @@ describe('element-behaviors', () => {
 		await new Promise(r => setTimeout(r))
 
 		expect(disconnectedCount).toBe(1, 'expected disconnectedCallback to be called once')
+
+		document.body.append(div)
+
+		await new Promise(r => setTimeout(r))
+
+		expect(constructCount).toBe(2)
+		expect(connectedCount).toBe(2)
+
+		div.remove()
+
+		await new Promise(r => setTimeout(r))
+
+		expect(disconnectedCount).toBe(2, 'expected disconnectedCallback to be called again')
+
+		document.body.append(div)
+
+		await new Promise(r => setTimeout(r))
+
+		expect(constructCount).toBe(3)
+		expect(connectedCount).toBe(3)
+
+		div.removeAttribute('has')
+
+		await new Promise(r => setTimeout(r))
+
+		expect(disconnectedCount).toBe(3, 'expected disconnectedCallback to be called again')
+
+		div.setAttribute('has', 'awesomeness')
+
+		await new Promise(r => setTimeout(r))
+
+		expect(constructCount).toBe(4)
+		expect(connectedCount).toBe(4)
 	})
 
 	it('works in shadow roots', async () => {
@@ -204,6 +240,86 @@ describe('element-behaviors', () => {
 			expect(div!.behaviors.has('three')).toBeTrue()
 
 			document.body.innerHTML = ''
+		})
+	})
+
+	describe('awaitElementDefined', () => {
+		it('allows to prevent behaviors from being instantiated until custom elements are defined', async () => {
+			let waitingBehaviorConnected = false
+
+			elementBehaviors.define(
+				'wait-for-element-defined',
+				class WaitsForElementDefined {
+					static awaitElementDefined = true
+
+					connectedCallback() {
+						waitingBehaviorConnected = true
+					}
+				},
+			)
+
+			let nonWaitingBehaviorConnected = false
+
+			elementBehaviors.define(
+				'does-not-wait',
+				class DoesNotWait {
+					static awaitElementDefined = false // This is the default
+
+					connectedCallback() {
+						nonWaitingBehaviorConnected = true
+					}
+				},
+			)
+
+			document.body.innerHTML = /*html*/ `
+				<some-element has="wait-for-element-defined does-not-wait"></some-element>
+			`
+
+			await new Promise(r => setTimeout(r)) // wait for MutationObservers
+
+			expect(waitingBehaviorConnected).toBeFalse()
+			expect(nonWaitingBehaviorConnected).toBeTrue()
+
+			customElements.define('some-element', class extends HTMLElement {})
+
+			await new Promise(r => setTimeout(r)) // wait for MutationObservers
+
+			expect(waitingBehaviorConnected).toBeTrue()
+			expect(nonWaitingBehaviorConnected).toBeTrue()
+		})
+
+		it('does not instantiate a waiting behavior if the element is disconnected before definition', async () => {
+			let waitingBehaviorConnected = false
+
+			elementBehaviors.define(
+				'wait-for-element-defined-2',
+				class WaitsForElementDefined {
+					static awaitElementDefined = true
+
+					connectedCallback() {
+						waitingBehaviorConnected = true
+					}
+				},
+			)
+
+			document.body.innerHTML = /*html*/ `
+				<some-element-2 has="wait-for-element-defined-2"></some-element-2>
+			`
+
+			const someEl = document.body.firstElementChild!
+
+			await new Promise(r => setTimeout(r)) // wait for MutationObservers
+
+			expect(waitingBehaviorConnected).toBeFalse()
+
+			// remove before defining
+			someEl.remove()
+			customElements.define('some-element-2', class extends HTMLElement {})
+
+			await new Promise(r => setTimeout(r)) // wait for MutationObservers
+
+			// behavior will not erroneously be connected after awaiting the element definition
+			expect(waitingBehaviorConnected).toBeFalse()
 		})
 	})
 })

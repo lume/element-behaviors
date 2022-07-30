@@ -1,0 +1,19 @@
+<html>
+	<head>
+		<script src="../../dist/global.js"></script>
+
+		<!-- TODO: Ensure these work with type="module" too -->
+		<script src="./ClickCounter.js"></script>
+		<script src="./ClickLogger.js"></script>
+	</head>
+	<body>
+		<button has="click-counter click-logger"></button>
+
+		<script>
+			const el = document.querySelector('button')
+			const counter = el.behaviors.get('click-counter')
+
+			setInterval(() => console.log('Count is:', counter.count), 1000)
+		</script>
+	</body>
+</html>
