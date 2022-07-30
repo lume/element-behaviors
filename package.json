@@ -1,7 +1,7 @@
 {
 	"name": "element-behaviors",
 	"description": "An entity-component system for HTML elements.",
-	"version": "3.0.1",
+	"version": "3.0.2",
 	"license": "LGPL-3.0",
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
