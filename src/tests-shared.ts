@@ -36,23 +36,29 @@ describe('element-behaviors', () => {
 
 		class Awesomeness {
 			constructor(public el: Element) {
-				expect(this.el).toBe(div)
 				constructCount++
+				expect(this.el).toBe(div)
 			}
 
 			static observedAttributes = ['foo']
 
-			connectedCallback() {
+			connectedCallback(element: Element) {
 				connectedCount++
+				expect(element).toBe(this.el)
+				expect(element).toBe(div)
 			}
 
-			disconnectedCallback() {
+			disconnectedCallback(element: Element) {
 				disconnectedCount++
+				expect(element).toBe(this.el)
+				expect(element).toBe(div)
 			}
 
-			attributeChangedCallback(attr: string, oldVal: string | null, newVal: string | null) {
+			attributeChangedCallback(attr: string, oldVal: string | null, newVal: string | null, element: Element) {
 				attrChangedCount++
 				attrChangedArgs.push(attr, oldVal, newVal)
+				expect(element).toBe(this.el)
+				expect(element).toBe(div)
 			}
 		}
 

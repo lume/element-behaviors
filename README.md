@@ -160,21 +160,25 @@ method is the `element` that has the behavior on it:
 
 ```js
 class SomeBehavior {
-	// This is called only once, given the element that the behavior is attached to.
+	// This is called only once, given the `element` that the behavior is attached to.
 	constructor(element) {}
 
-	// This is called any time the associated `element` is appended into the DOM.
+	// This is called any time the associated `element` is appended into the
+	// DOM, passed in the `element`
 	connectedCallback(element) {}
 
-	// This is called any time the associated `element` is removed from the DOM.
+	// This is called any time the associated `element` is removed from the DOM,
+	// passed in the `element`.
 	disconnectedCallback(element) {}
 
 	// As with custom elements, define which attributes of the associated
 	// element that the behavior should react to.
 	static observedAttributes = ['some-attribute', 'other-attribute']
 
-	// This is called any time any of the `observedAttributes` of the associated element have been changed.
-	attributeChangedCallback(element, attributeName, oldValue, newValue) {}
+	// This is called any time any of the `observedAttributes` of the associated
+	// element have been changed, just like with Custom Elements but with the
+	// additional passed in `element`.
+	attributeChangedCallback(attributeName, oldValue, newValue, element) {}
 
 	// There is one additional API, unlike with Custom Elements. If `static
 	// awaitElementDefined` is `true`, then the behavior will not be

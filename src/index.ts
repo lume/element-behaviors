@@ -9,9 +9,9 @@ import type {Constructor} from 'lowclass'
 // DOM. Make it order-independent.
 
 type PossibleBehaviorInstance = {
-	connectedCallback?: () => void
-	disconnectedCallback?: () => void
-	attributeChangedCallback?: (attr: string, oldValue: string | null, newValue: string | null) => void
+	connectedCallback?: (element: Element) => void
+	disconnectedCallback?: (element: Element) => void
+	attributeChangedCallback?: (attr: string, oldValue: string | null, newValue: string | null, element: Element) => void
 	[k: string]: any
 	[k: number]: any
 }
@@ -319,7 +319,7 @@ class HasAttribute implements CustomAttribute {
 			if (this.isConnected) {
 				const behavior = new Behavior(this.ownerElement)
 				this.behaviors.set(name, behavior)
-				behavior.connectedCallback?.()
+				behavior.connectedCallback?.(this.ownerElement)
 
 				if (Array.isArray(observedAttributes) && observedAttributes.length) {
 					this.fireInitialAttributeChangedCallbacks(behavior, observedAttributes)
@@ -348,7 +348,7 @@ class HasAttribute implements CustomAttribute {
 		// ran its connectedCallback.
 		if (!behavior) return
 
-		behavior.disconnectedCallback?.()
+		behavior.disconnectedCallback?.(this.ownerElement)
 		this.destroyAttributeObserver(behavior)
 		this.behaviors.delete(name)
 	}
@@ -392,7 +392,7 @@ class HasAttribute implements CustomAttribute {
 					continue
 				}
 
-				behavior.attributeChangedCallback(name, lastAttributeValues[name], record.oldValue)
+				behavior.attributeChangedCallback(name, lastAttributeValues[name], record.oldValue, this.ownerElement)
 
 				lastAttributeValues[name] = record.oldValue
 			}
@@ -401,7 +401,12 @@ class HasAttribute implements CustomAttribute {
 
 			for (const name in lastAttributeValues) {
 				attr = el.attributes.getNamedItem(name)
-				behavior.attributeChangedCallback(name, lastAttributeValues[name], attr === null ? null : attr.value)
+				behavior.attributeChangedCallback(
+					name,
+					lastAttributeValues[name],
+					attr === null ? null : attr.value,
+					this.ownerElement,
+				)
 			}
 		})
 
@@ -419,7 +424,12 @@ class HasAttribute implements CustomAttribute {
 
 		for (const name of attributes) {
 			if (this.ownerElement.hasAttribute(name))
-				behavior.attributeChangedCallback(name, null, this.ownerElement.attributes.getNamedItem(name)!.value)
+				behavior.attributeChangedCallback(
+					name,
+					null,
+					this.ownerElement.attributes.getNamedItem(name)!.value,
+					this.ownerElement,
+				)
 		}
 	}
 }
