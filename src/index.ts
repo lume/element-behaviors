@@ -104,6 +104,9 @@ export class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
 			this.#reactivityTriggerObject[key] = value
 		})
 
+		// TODO Remove the set() method from end users, allow the user to add
+		// behaviors in a fashion similar to classList.add().
+
 		super.set(key, value)
 		return this
 	}
@@ -224,6 +227,11 @@ class HasAttribute implements CustomAttribute {
 
 	isConnected = false // TODO move to base class
 
+	// TODO an improvement would be that behaviors are instantiated on element
+	// construction, though that will add some complexity (probably patching of
+	// many native APIs). Probably needs a change in custom-attributes first so it
+	// handles attributes during element construction.
+
 	connectedCallback() {
 		this.isConnected = true
 		this.changedCallback('', this.value)
@@ -295,6 +303,8 @@ class HasAttribute implements CustomAttribute {
 
 		if (!Behavior) return
 
+		// TODO Read observedAttributes during the define() call instead, like
+		// custom elements.
 		const observedAttributes = Behavior.observedAttributes
 
 		const tagName = this.ownerElement.tagName
