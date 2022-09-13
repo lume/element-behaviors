@@ -8,4 +8,4 @@ export * from './BehaviorRegistry.js'
 
 // Leave this last line alone, it gets automatically updated when publishing a
 // new version of this package.
-export const version = '3.0.2'
+export const version = '3.0.3'
