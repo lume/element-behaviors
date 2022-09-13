@@ -340,6 +340,8 @@ mixin class that gives Custom Element classes the ability to define which
 behaviors they ship with by
 default, which is super handy!
 
+> **Note** Thinking to move DefaultBehaviors to here instead of `lume`.
+
 To use it first install `lume`:
 
 ```sh
@@ -365,8 +367,8 @@ class SomeElement extends DefaultBehaviors(HTMLElement) {
 ```
 
 Additionally, the `static defaultBehaviors` property can return an object whose
-key names are behavior names, and whose values are functions that return true or
-false to determine if a default behavior should be initially added to the
+key names are behavior names, and whose values are functions that return `true` or
+`false` to determine if a default behavior should be initially added to an
 element or not. The function will receive the element, as well as intial
 behaviors that the element already has defined by the `has=""` attribute when
 the element is created.
@@ -409,6 +411,28 @@ When the `my-el` elements are created, only the one without the `another-behavio
 <my-el has="another-behavior"></my-el>
 <my-el has="some-behavior click-logger"></my-el>
 ```
+
+# TypeScript
+
+If you are using Solid JSX (f.e. with `@lume/element` or `solid-js` packages)
+you will want to import the `has=""` attribute type for use in your JSX
+templates:
+
+```tsx
+import type {} from 'element-behaviors/src/attribute-types.solid'
+
+export function SomeComponent() {
+  return <div has="foo bar" ...></div> // no error
+}
+
+export function OtherComponent() {
+  return <div has={123} ...></div> // error, value should be a string
+}
+```
+
+> **Note** Other types for React JSX, Preact JSX, Svelte templates, Vue
+> templates, etc, are not yet supported but easy to add. Open an issue or PR as
+> needed.
 
 # Notes
 
@@ -507,3 +531,12 @@ Any of the three `release:*` scripts will:
 
 > **Note**
 > After a failure, changes that were stashed will remain stashed.
+
+# TODO
+
+- TypeScript example with `solid-js`
+- TypeScript example with `@lume/element`
+- TypeScript example with `react`
+- TypeScript example with `preact`
+- TypeScript example with `svelte`
+- TypeScript example with `vue`

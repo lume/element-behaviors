@@ -42,10 +42,12 @@
 		"live-server": "^1.2.2",
 		"lowclass": "^5.0.0",
 		"prettier": "^2.0.0",
+		"solid-js": ">=1.0.0 <1.5.0",
 		"typescript": "4.4.3"
 	},
 	"peerDependencies": {
-		"@lume/element": "*"
+		"@lume/element": "*",
+		"solid-js": "*"
 	},
 	"repository": {
 		"type": "git",
