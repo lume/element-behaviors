@@ -1,4 +1,4 @@
-import type {ElementWithBehaviors} from './index.js'
+import type {ElementWithBehaviors} from './BehaviorRegistry'
 
 describe('element-behaviors', () => {
 	it('exposes the library globally', () => {

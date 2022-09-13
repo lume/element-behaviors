@@ -1,8 +1,7 @@
+import {createEffect} from 'solid-js'
 import './index.js' // adds elementBehaviors to global
 import './tests-shared.js'
-
-import {createEffect} from 'solid-js'
-import type {ElementWithBehaviors} from './index.js'
+import type {ElementWithBehaviors} from './BehaviorRegistry.js'
 
 // This test is here, not tested with global tests because the createEffect
 // otherwise seems to be from a duplicate solid-js lib during testing, hence is
