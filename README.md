@@ -8,59 +8,13 @@ For a basic example, see this live pen: https://codepen.io/trusktr/pen/ymPXNb
 
 Element behaviors are re-usable bits and pieces of logic that we can mix onto any HTML element.
 
-To explain what "element behaviors" are, an analogy can be used: "element behaviors" are effectively
-the same as "entity components" in an
-[entity-component system (ECS)](https://en.wikipedia.org/wiki/Entity%E2%80%93component%E2%80%93system).
-
-The term "element behaviors" works better with HTML elements because the word "components" is
-already too widely adopted for things like Web Components, React Components, Vue Components, and
-components of various other web-based view libraries. In those libraries, "component" means a
-specific building-block that is used in a specific way and not mixed onto other entities, which is
-not the same as the "components" in an entity-component system.
-
-To disambiguate and not cause confusion, we use the term "element behaviors",
-which are similar to "components" in an entity-component pattern: behaviors are
-to HTML elements like components are to entities.
-
 # Apply one or more behaviors onto HTML elements
 
-Element behaviors are useful for HTML elements in the same way that components are for entities in
-[entity-component systems (ECS)](https://en.wikipedia.org/wiki/Entity_component_system): any number of behaviors (i.e. components in ECS) can be applied to a given
-element (i.e. entity in ECS), and a specific behavior (component) can be applied to any number elements (entities).
+Element behaviors are useful for assigning features onto HTML elements. They are similar to [Custom Elements](https://developers.google.com/web/fundamentals/web-components/customelements), but multiple behaviors can be associated with an element.
 
 Element behaviors have lifecycle methods that are named the same as with
-[Custom Elements](https://developers.google.com/web/fundamentals/web-components/customelements) (be
-sure to read about Custom Elements first if you don't know). This let's us react to the lifecycle events of an
-element just like the element itself can react to its own life cycle events.
-
-# What for?
-
-Element Behaviors can be used as an alternative to Custom Elements, especially in cases where Custom Elements cannot be used at all.
-
-For example, Custom Elements do not work with SVG because Custom Elements cannot
-extend from `SVGElement`, and special `HTMLElement`s like `<table>` and `<tr>`
-can not be extended by Custom Elements in all browsers (Safari does not support
-the `is=""` attribute).
-
-This is where Element Behaviors are advantageous: they do not need to extend
-from any base class, and one or more behaviors can be used on any type of
-elements, whether they are SVG or table elements, etc:
-
-```html
-<table has="click-logger">
-	<tr has="coolness awesomeness">
-		...
-	</tr>
-</table>
-<svg has="some-behavior">
-	<rect has="other-behavior"></rect>
-</svg>
-```
-
-This works great for progressive enhancement where `<svg>` and `<table>`
-elements will work fine without JavaScript (or prior to JavaScript being
-loaded), and Element Behaviors can augment the elements when JavaScript is
-available.
+Custom Elements. This let's us react to the lifecycle events of an
+element just like a custom element can.
 
 To help spark your imagination, this is what you might do with Element
 Behaviors. Suppose we are making a Minecraft-like game:
@@ -85,7 +39,7 @@ wide variety of elements in an application, and that the behavior will simply
 log to the console whenever the element is clicked.
 
 Unlike Custom Elements that need to extend from `HTMLElement`, Element Behaviors
-do not need to extend from any class, and similar to but unlike Custom Element
+do not need to extend from any class. Similar to but unlike Custom Element
 lifecycle methods, Element Behavior lifecycle methods all accept a first
 argument `element` which is the element onto which the instance of the behavior
 is applied.
@@ -147,6 +101,35 @@ npm run examples
 This opens a tab in your browser. Then, for example, click on the `clicks/`
 folder to see the [`examples/clicks/index.html`](./examples/clicks/index.html)
 file in action.
+
+# Alternative to Custom Elements for special cases
+
+Element Behaviors can be used as an alternative to Custom Elements, especially in cases where Custom Elements cannot be used at all.
+
+For example, Custom Elements do not work with SVG because Custom Elements cannot
+extend from `SVGElement`, and special `HTMLElement`s like `<table>` and `<tr>`
+can not be extended by Custom Elements in all browsers (Safari does not support
+the `is=""` attribute, i.e. "customized built-ins").
+
+This is where Element Behaviors are advantageous: they do not need to extend
+from any base class, and one or more behaviors can be used on any type of
+elements, whether they are SVG, table elements, etc:
+
+```html
+<table has="click-logger">
+	<tr has="coolness awesomeness">
+		...
+	</tr>
+</table>
+<svg has="some-behavior">
+	<rect has="other-behavior"></rect>
+</svg>
+```
+
+This works great for progressive enhancement where `<svg>` and `<table>`
+elements will work fine without JavaScript (or prior to JavaScript being
+loaded), and Element Behaviors can augment the elements when JavaScript is
+available.
 
 # API
 
@@ -300,9 +283,46 @@ interact with its APIs as needed. For example:
 </script>
 ```
 
-### Solid.js Reactivity
+# Notes
 
-The `.behaviors` property is reactive using [Solid.js](https://www.solidjs.com)
+- See this [long issue](https://github.com/w3c/webcomponents/issues/509) on w3c's webcomponents repo,
+  which led to [the issue](https://github.com/w3c/webcomponents/issues/662) where the idea for element-behaviors was born,
+  with some ideas from this [other issue](https://github.com/w3c/webcomponents/issues/663) (thanks to
+  all who helped to discuss the idea!).
+- Uses [custom-attributes](https://github.com/lume/custom-attributes) (originally by @matthewp, forked
+  in [LUME](https://lume.io)) to implement the `has=""` attribute.
+  
+---
+
+# Extras (spec and proposal authors can stop reading here)
+
+The rest of the document adds features that wouldn't be implementable in a real "element behaviors" (or similar) spec because the web platform does not support the following extras:
+
+## TypeScript
+
+If you are using Solid JSX (f.e. with `@lume/element` or `solid-js` packages)
+you will want to import the `has=""` attribute type for use in your JSX
+templates:
+
+```tsx
+import type {} from 'element-behaviors/src/attribute-types.solid'
+
+export function SomeComponent() {
+  return <div has="foo bar" ...></div> // no error
+}
+
+export function OtherComponent() {
+  return <div has={123} ...></div> // error, value should be a string
+}
+```
+
+> **Note** Other types for React JSX, Preact JSX, Svelte templates, Vue
+> templates, etc, are not yet supported but easy to add. Open an issue or PR as
+> needed.
+
+## Solid.js Reactivity
+
+The `el.behaviors` property is reactive using [Solid.js](https://www.solidjs.com)
 APIs, meaning we can react to changes in behaviors.
 
 This can be taken advantage of by first installing `solid-js`,
@@ -326,7 +346,7 @@ createEffect(() => {
 
 	// Log the count any time it changes:
 
-	// Assume in this example that behavior.count is a reactive (signal) property:
+	// Assume in this example that behavior.count is a reactive (signal) property made with Solid.js:
 	console.log(behavior.count) // reactive
 })
 ```
@@ -411,37 +431,6 @@ When the `my-el` elements are created, only the one without the `another-behavio
 <my-el has="another-behavior"></my-el>
 <my-el has="some-behavior click-logger"></my-el>
 ```
-
-# TypeScript
-
-If you are using Solid JSX (f.e. with `@lume/element` or `solid-js` packages)
-you will want to import the `has=""` attribute type for use in your JSX
-templates:
-
-```tsx
-import type {} from 'element-behaviors/src/attribute-types.solid'
-
-export function SomeComponent() {
-  return <div has="foo bar" ...></div> // no error
-}
-
-export function OtherComponent() {
-  return <div has={123} ...></div> // error, value should be a string
-}
-```
-
-> **Note** Other types for React JSX, Preact JSX, Svelte templates, Vue
-> templates, etc, are not yet supported but easy to add. Open an issue or PR as
-> needed.
-
-# Notes
-
-- See this [long issue](https://github.com/w3c/webcomponents/issues/509) on w3c's webcomponents repo,
-  which led to [the issue](https://github.com/w3c/webcomponents/issues/662) where the idea for element-behaviors was born,
-  with some ideas from this [other issue](https://github.com/w3c/webcomponents/issues/663) (thanks to
-  all who helped to discuss the idea!).
-- Uses [custom-attributes](https://github.com/lume/custom-attributes) (originally by @matthewp, forked in LUME) to
-  implement the `has=""` attribute.
 
 # Contributing
 
