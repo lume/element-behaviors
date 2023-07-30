@@ -1,12 +1,14 @@
 # element-behaviors
 
-Apply any number of functionalities ("behaviors") to an HTML element.
+Element behaviors are re-usable bits and pieces of logic that we can mix onto any HTML element. We can apply any number of functionalities ("behaviors") to an HTML element.
 
 <h4><code><strong>npm install element-behaviors</strong></code></h4>
 
-For a basic example, see this live pen: https://codepen.io/trusktr/pen/ymPXNb
+The next Sparkles demo on CodePen shows how to apply a behavior to multiple elements:
 
-Element behaviors are re-usable bits and pieces of logic that we can mix onto any HTML element.
+https://codepen.io/trusktr/pen/MWzzNdV?editors=1000
+
+https://github.com/lume/element-behaviors/assets/297678/0289f294-e5ff-4b7c-b30a-61e29aabea51
 
 # Apply one or more behaviors onto HTML elements
 
@@ -91,7 +93,9 @@ An example of that is in [`examples/clicks/`](./examples/clicks/index.html).
 
 # Examples
 
-To run examples like the previous `ClickLogger`, run
+For a basic example, see this live pen: https://codepen.io/trusktr/pen/ymPXNb
+
+To run local examples like the previous `ClickLogger` after cloning this repository, run
 
 ```sh
 npm install
