@@ -4,12 +4,17 @@ import {CancelablePromise, PromiseCancellation} from './CancelablePromise.js'
 import type {ElementWithBehaviors, PossibleBehaviorConstructor, PossibleBehaviorInstance} from './BehaviorRegistry.js'
 import {BehaviorMap} from './BehaviorMap.js'
 
-// All elements have a `behaviors` property. If null, it the element has no
-// behaviors, otherwise the property is a map of behavior names to behavior
-// instances.
-// One instance of is instantiated per element with has="" attribute.
+/**
+ * Defines the global `has=""` attribute for assigning behaviors to an element.
+ *
+ * One instance of this class is instantiated per element with `has=""` attribute.
+ *
+ * If you're using element-behaviors, then all elements now also have a
+ * `behaviors` property that is a map of behavior names to behavior instances.
+ */
 export class HasAttribute implements CustomAttribute {
-	// properties defined by CustomAttribute
+	// Properties defined by CustomAttribute
+	// TODO Ensure these types from from CustomAttribute
 	declare ownerElement: ElementWithBehaviors
 	declare value: string
 	declare name: string
@@ -94,9 +99,12 @@ export class HasAttribute implements CustomAttribute {
 	}
 
 	private async connectBehavior(name: string) {
-		const Behavior = elementBehaviors.get(name)
+		let Behavior = elementBehaviors.get(name)
 
-		if (!Behavior) return
+		if (!Behavior) {
+			await elementBehaviors.whenDefined(name)
+			Behavior = elementBehaviors.get(name)!
+		}
 
 		// TODO Read observedAttributes during the define() call instead, like
 		// custom elements.
@@ -242,17 +250,19 @@ export class HasAttribute implements CustomAttribute {
 // Avoid errors trying to use DOM APIs in non-DOM environments (f.e. server-side rendering).
 if (globalThis.window?.document) {
 	// stores the behaviors associated to each element.
-	const behaviorMaps = new WeakMap()
+	const behaviorMaps = new WeakMap<object, BehaviorMap>()
 
 	Object.defineProperty(Element.prototype, 'behaviors', {
 		get() {
-			let thisBehaviors = null
+			let behaviorMap: BehaviorMap | null = null
 
-			if (!behaviorMaps.has(this)) {
-				behaviorMaps.set(this, (thisBehaviors = new BehaviorMap()))
-			} else thisBehaviors = behaviorMaps.get(this)
+			if (behaviorMaps.has(this)) {
+				behaviorMap = behaviorMaps.get(this)!
+			} else {
+				behaviorMaps.set(this, (behaviorMap = new BehaviorMap()))
+			}
 
-			return thisBehaviors
+			return behaviorMap
 		},
 	})
 

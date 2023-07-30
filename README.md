@@ -291,7 +291,7 @@ interact with its APIs as needed. For example:
   all who helped to discuss the idea!).
 - Uses [custom-attributes](https://github.com/lume/custom-attributes) (originally by @matthewp, forked
   in [LUME](https://lume.io)) to implement the `has=""` attribute.
-  
+
 ---
 
 # Extras (spec and proposal authors can stop reading here)

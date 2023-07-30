@@ -1,43 +1,54 @@
 import type {Constructor} from 'lowclass'
 import type {BehaviorMap} from './BehaviorMap.js'
 
-export const whenDefinedPromises: Map<string, Promise<void>> = new Map()
-
+/** A registry of behaviors. Similar to CustomElementRegistry. */
 export class BehaviorRegistry {
-	protected _definedBehaviors = new Map<string, PossibleBehaviorConstructor>()
+	#definedBehaviors = new Map<string, PossibleBehaviorConstructor>()
+	#whenDefinedPromises: Map<string, {promise: Promise<void>; resolve: () => void}> = new Map()
 
+	/**
+	 * Associate a class `Behavior` to a given behavior `name`. Any time an
+	 * element has the named behavior, the given class will be instantiated and
+	 * the instance will be able to apply logic to its host element.
+	 */
 	define<T extends PossibleBehaviorConstructor>(name: string, Behavior: T) {
-		if (!this._definedBehaviors.has(name)) {
-			this._definedBehaviors.set(name, Behavior)
+		if (!this.#definedBehaviors.has(name)) {
+			this.#definedBehaviors.set(name, Behavior)
+
+			if (this.#whenDefinedPromises.has(name)) {
+				this.#whenDefinedPromises.get(name)!.resolve()
+				this.#whenDefinedPromises.delete(name)
+			}
 		} else {
 			throw new Error(`Behavior ${name} is already defined.`)
 		}
 	}
 
+	/** Get the behavior class associated with `name`. */
 	get(name: string) {
-		return this._definedBehaviors.get(name)
+		return this.#definedBehaviors.get(name)
 	}
 
+	/** Returns `true` if there's a class defined for the given `name`, `false` otherwise. */
 	has(name: string) {
-		return this._definedBehaviors.has(name)
+		return this.#definedBehaviors.has(name)
 	}
 
-	// TODO WIP, similar to customElements.whenDefined, so that code can wait for
-	// behaviors to be defined, which will help with load order issues when we
-	// set autoDefineElements to true by default in LUME (causes elements to be
-	// defined in module load order, which may not happen after all behaviors
-	// are loaded).
-	whenDefined(name: string) {
+	/**
+	 * Wait for the promise returned by this to run code after a behavior class
+	 * for the given `name` has been defined. If the behavior class is already
+	 * defined, resolves immediately.
+	 */
+	whenDefined(name: string): Promise<void> {
+		if (this.#whenDefinedPromises.has(name)) return this.#whenDefinedPromises.get(name)!.promise
+		if (this.has(name)) return Promise.resolve()
+
 		let resolve!: () => void
-		const p = new Promise<void>(r => (resolve = r))
+		const promise = new Promise<void>(r => (resolve = r))
 
-		if (!this.has(name)) {
-			whenDefinedPromises.set(name, p)
-		} else {
-			resolve()
-		}
+		this.#whenDefinedPromises.set(name, {promise, resolve})
 
-		return p
+		return promise
 	}
 }
 
