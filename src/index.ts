@@ -2,9 +2,9 @@
 // defined (via elementBehaviors.define()) after the elements are already in the
 // DOM. Make it order-independent.
 
-export * from './HasAttribute.js'
 export * from './BehaviorMap.js'
 export * from './BehaviorRegistry.js'
+export * from './HasAttribute.js'
 
 // Leave this last line alone, it gets automatically updated when publishing a
 // new version of this package.
