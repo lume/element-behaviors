@@ -34,7 +34,7 @@
 	},
 	"dependencies": {
 		"@lume/custom-attributes": "^0.1.2",
-		"solid-js": "^1.4.0"
+		"solid-js": "<1.5.0"
 	},
 	"devDependencies": {
 		"@lume/cli": "^0.9.0",

@@ -9,6 +9,10 @@ import type {PossibleBehaviorInstance} from './BehaviorRegistry.js'
  */
 
 export class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
+	// We make things like element.behaviors.get('some-behavior') reactive (in
+	// Solid.js), but a DOM-spec'd version of element-behaviors would not have
+	// this, or it could have reactivity if it gets built into the JavaScript
+	// language (people are talking about "signals and effects")
 	#reactivityTriggerObject = createMutable<Record<string, PossibleBehaviorInstance>>({})
 
 	find(predicate: (name: string, behavior: PossibleBehaviorInstance) => boolean) {
