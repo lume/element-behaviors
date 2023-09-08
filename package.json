@@ -29,8 +29,7 @@
 		"version": "lume versionHook",
 		"postversion": "lume postVersionHook",
 		"OTHER SCRIPTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "",
-		"examples": "live-server . --open=./examples",
-		"prepare": "npm run build"
+		"examples": "live-server . --open=./examples"
 	},
 	"dependencies": {
 		"@lume/custom-attributes": "^0.1.2",

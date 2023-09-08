@@ -1,0 +1,17 @@
+import type { PossibleBehaviorInstance } from './BehaviorRegistry.js';
+export declare class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
+    #private;
+    find(predicate: (name: string, behavior: PossibleBehaviorInstance) => boolean): PossibleBehaviorInstance | undefined;
+    get(key: string): PossibleBehaviorInstance | undefined;
+    set(key: string, value: PossibleBehaviorInstance): this;
+    delete(key: string): boolean;
+    clear(): void;
+    has(key: string): boolean;
+    entries(): IterableIterator<[string, PossibleBehaviorInstance]>;
+    [Symbol.iterator](): IterableIterator<[string, PossibleBehaviorInstance]>;
+    forEach(callbackfn: (value: PossibleBehaviorInstance, key: string, map: Map<string, PossibleBehaviorInstance>) => void, thisArg?: any): void;
+    keys(): IterableIterator<string>;
+    get size(): number;
+    set size(n: number);
+}
+//# sourceMappingURL=BehaviorMap.d.ts.map
