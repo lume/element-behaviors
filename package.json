@@ -29,7 +29,7 @@
 		"version": "lume versionHook",
 		"postversion": "lume postVersionHook",
 		"OTHER SCRIPTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "",
-		"examples": "live-server . --open=./examples"
+		"examples": "five-server . --open=./examples"
 	},
 	"dependencies": {
 		"@lume/custom-attributes": "^0.1.2",
@@ -37,7 +37,7 @@
 	},
 	"devDependencies": {
 		"@lume/cli": "^0.9.0",
-		"live-server": "^1.2.2",
+		"five-server": "^0.3.1",
 		"lowclass": "^5.0.0",
 		"prettier": "^2.0.0",
 		"solid-js": ">=1.0.0 <1.5.0",
