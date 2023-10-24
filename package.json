@@ -32,7 +32,7 @@
 		"examples": "five-server . --open=./examples"
 	},
 	"dependencies": {
-		"@lume/custom-attributes": "^0.1.2",
+		"@lume/custom-attributes": "^0.2.0",
 		"solid-js": "<1.5.0"
 	},
 	"devDependencies": {
