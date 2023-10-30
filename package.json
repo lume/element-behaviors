@@ -6,11 +6,6 @@
 	"main": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"type": "module",
-	"exports COMMENT:": "This removes 'dist' from import statements, as well as replaces the 'main' field. See https://github.com/nodejs/node/issues/14970#issuecomment-571887546",
-	"exports": {
-		".": "./dist/index.js",
-		"./": "./dist/"
-	},
 	"homepage": "https://github.com/trusktr/element-behaviors",
 	"scripts": {
 		"LUME SCRIPTS XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX": "",
@@ -20,7 +15,7 @@
 		"typecheck": "lume typecheck",
 		"typecheck:watch": "lume typecheckWatch",
 		"test": "lume test",
-		"test:debug": "lume testDebug",
+		"test:watch": "lume test --watch",
 		"prettier": "lume prettier",
 		"prettier:check": "lume prettierCheck",
 		"release:patch": "lume releasePatch",

@@ -1,16 +1,3 @@
-var __classPrivateFieldSet = (this && this.__classPrivateFieldSet) || function (receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
-    return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
-};
-var __classPrivateFieldGet = (this && this.__classPrivateFieldGet) || function (receiver, state, kind, f) {
-    if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
-    if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
-    return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
-};
-var _a;
-var _HasAttribute_skipConnectedCheck;
 import '@lume/custom-attributes/dist/index.js';
 import { CancelablePromise, PromiseCancellation } from './CancelablePromise.js';
 import { BehaviorMap } from './BehaviorMap.js';
@@ -19,7 +6,7 @@ export class HasAttribute {
         this.observers = new Map();
         this.elementDefinedPromises = new Map();
         this.isConnected = false;
-        _HasAttribute_skipConnectedCheck.set(this, false);
+        this.#skipConnectedCheck = false;
     }
     get behaviors() {
         return this.ownerElement.behaviors;
@@ -30,12 +17,13 @@ export class HasAttribute {
     }
     disconnectedCallback() {
         this.isConnected = false;
-        __classPrivateFieldSet(this, _HasAttribute_skipConnectedCheck, true, "f");
+        this.#skipConnectedCheck = true;
         this.changedCallback(this.value, '');
-        __classPrivateFieldSet(this, _HasAttribute_skipConnectedCheck, false, "f");
+        this.#skipConnectedCheck = false;
     }
+    #skipConnectedCheck;
     changedCallback(oldVal, newVal) {
-        if (!__classPrivateFieldGet(this, _HasAttribute_skipConnectedCheck, "f")) {
+        if (!this.#skipConnectedCheck) {
             if (!this.isConnected)
                 return;
         }
@@ -75,7 +63,6 @@ export class HasAttribute {
             this.connectBehavior(name);
     }
     async connectBehavior(name) {
-        var _a;
         let Behavior = elementBehaviors.get(name);
         if (!Behavior) {
             await elementBehaviors.whenDefined(name);
@@ -99,7 +86,7 @@ export class HasAttribute {
             if (this.isConnected) {
                 const behavior = new Behavior(this.ownerElement);
                 this.behaviors.set(name, behavior);
-                (_a = behavior.connectedCallback) === null || _a === void 0 ? void 0 : _a.call(behavior, this.ownerElement);
+                behavior.connectedCallback?.(this.ownerElement);
                 if (Array.isArray(observedAttributes) && observedAttributes.length) {
                     this.fireInitialAttributeChangedCallbacks(behavior, observedAttributes);
                     this.createAttributeObserver(behavior);
@@ -112,7 +99,6 @@ export class HasAttribute {
         }
     }
     disconnectBehavior(name) {
-        var _a;
         const promiseId = name + '_' + this.ownerElement.tagName;
         const promise = this.elementDefinedPromises.get(promiseId);
         if (promise) {
@@ -122,7 +108,7 @@ export class HasAttribute {
         const behavior = this.behaviors.get(name);
         if (!behavior)
             return;
-        (_a = behavior.disconnectedCallback) === null || _a === void 0 ? void 0 : _a.call(behavior, this.ownerElement);
+        behavior.disconnectedCallback?.(this.ownerElement);
         this.destroyAttributeObserver(behavior);
         this.behaviors.delete(name);
     }
@@ -173,8 +159,7 @@ export class HasAttribute {
         }
     }
 }
-_HasAttribute_skipConnectedCheck = new WeakMap();
-if ((_a = globalThis.window) === null || _a === void 0 ? void 0 : _a.document) {
+if (globalThis.window?.document) {
     const behaviorMaps = new WeakMap();
     Object.defineProperty(Element.prototype, 'behaviors', {
         get() {
