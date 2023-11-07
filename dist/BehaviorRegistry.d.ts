@@ -14,17 +14,17 @@ declare global {
         elementBehaviors: BehaviorRegistry;
     }
 }
-export declare type ElementBehaviors = {
+export type ElementBehaviors = {
     behaviors: BehaviorMap;
 };
-export declare type ElementWithBehaviors = Element & ElementBehaviors;
-export declare type PossibleBehaviorConstructor = Constructor<PossibleBehaviorInstance, [
+export type ElementWithBehaviors = Element & ElementBehaviors;
+export type PossibleBehaviorConstructor = Constructor<PossibleBehaviorInstance, [
     ElementWithBehaviors
 ], {
     awaitElementDefined?: boolean;
     observedAttributes?: string[];
 }>;
-export declare type PossibleBehaviorInstance = {
+export type PossibleBehaviorInstance = {
     connectedCallback?: (element: Element) => void;
     disconnectedCallback?: (element: Element) => void;
     attributeChangedCallback?: (attr: string, oldValue: string | null, newValue: string | null, element: Element) => void;

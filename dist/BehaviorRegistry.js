@@ -1,10 +1,6 @@
 export class BehaviorRegistry {
-    constructor() {
-        this.#definedBehaviors = new Map();
-        this.#whenDefinedPromises = new Map();
-    }
-    #definedBehaviors;
-    #whenDefinedPromises;
+    #definedBehaviors = new Map();
+    #whenDefinedPromises = new Map();
     define(name, Behavior) {
         if (!this.#definedBehaviors.has(name)) {
             this.#definedBehaviors.set(name, Behavior);

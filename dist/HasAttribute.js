@@ -2,15 +2,12 @@ import '@lume/custom-attributes/dist/index.js';
 import { CancelablePromise, PromiseCancellation } from './CancelablePromise.js';
 import { BehaviorMap } from './BehaviorMap.js';
 export class HasAttribute {
-    constructor() {
-        this.observers = new Map();
-        this.elementDefinedPromises = new Map();
-        this.isConnected = false;
-        this.#skipConnectedCheck = false;
-    }
     get behaviors() {
         return this.ownerElement.behaviors;
     }
+    observers = new Map();
+    elementDefinedPromises = new Map();
+    isConnected = false;
     connectedCallback() {
         this.isConnected = true;
         this.changedCallback('', this.value);
@@ -21,7 +18,7 @@ export class HasAttribute {
         this.changedCallback(this.value, '');
         this.#skipConnectedCheck = false;
     }
-    #skipConnectedCheck;
+    #skipConnectedCheck = false;
     changedCallback(oldVal, newVal) {
         if (!this.#skipConnectedCheck) {
             if (!this.isConnected)

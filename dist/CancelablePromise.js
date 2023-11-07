@@ -3,6 +3,7 @@ export const _ = Privates();
 export class PromiseCancellation extends Error {
 }
 export class CancelablePromise extends Promise {
+    canceled;
     constructor(executor, options) {
         const rejectOnCancel = options ? options.rejectOnCancel : false;
         let originalReject;

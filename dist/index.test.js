@@ -9,9 +9,7 @@ describe('element-behaviors', () => {
     });
     it('defines an element behavior', () => {
         class Foo {
-            constructor() {
-                this.foo = 'bar';
-            }
+            foo = 'bar';
         }
         elementBehaviors.define('foo', Foo);
         expect(elementBehaviors.has('foo')).toBe(true);
@@ -28,12 +26,13 @@ describe('element-behaviors', () => {
         let connectedCount = 0;
         let disconnectedCount = 0;
         class Awesomeness {
+            el;
             constructor(el) {
                 this.el = el;
                 constructCount++;
                 expect(this.el).toBe(div);
             }
-            static { this.observedAttributes = ['foo']; }
+            static observedAttributes = ['foo'];
             connectedCallback(element) {
                 connectedCount++;
                 expect(element).toBe(this.el);
@@ -104,10 +103,11 @@ describe('element-behaviors', () => {
         let connectedCount = 0;
         let disconnectedCount = 0;
         class Shine {
+            el;
             constructor(el) {
                 this.el = el;
             }
-            static { this.observedAttributes = ['foo']; }
+            static observedAttributes = ['foo'];
             connectedCallback() {
                 connectedCount++;
             }
@@ -172,14 +172,14 @@ describe('element-behaviors', () => {
         it('allows to prevent behaviors from being instantiated until custom elements are defined', async () => {
             let waitingBehaviorConnected = false;
             elementBehaviors.define('wait-for-element-defined', class WaitsForElementDefined {
-                static { this.awaitElementDefined = true; }
+                static awaitElementDefined = true;
                 connectedCallback() {
                     waitingBehaviorConnected = true;
                 }
             });
             let nonWaitingBehaviorConnected = false;
             elementBehaviors.define('does-not-wait', class DoesNotWait {
-                static { this.awaitElementDefined = false; }
+                static awaitElementDefined = false;
                 connectedCallback() {
                     nonWaitingBehaviorConnected = true;
                 }
@@ -199,7 +199,7 @@ describe('element-behaviors', () => {
         it('does not instantiate a waiting behavior if the element is disconnected before definition', async () => {
             let waitingBehaviorConnected = false;
             elementBehaviors.define('wait-for-element-defined-2', class WaitsForElementDefined {
-                static { this.awaitElementDefined = true; }
+                static awaitElementDefined = true;
                 connectedCallback() {
                     waitingBehaviorConnected = true;
                 }

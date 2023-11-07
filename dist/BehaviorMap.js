@@ -1,11 +1,7 @@
 import { $TRACK } from 'solid-js';
 import { createMutable, modifyMutable, reconcile } from 'solid-js/store';
 export class BehaviorMap extends Map {
-    constructor() {
-        super(...arguments);
-        this.#reactivityTriggerObject = createMutable({});
-    }
-    #reactivityTriggerObject;
+    #reactivityTriggerObject = createMutable({});
     find(predicate) {
         let result = void undefined;
         for (const [name, behavior] of this) {
