@@ -28,14 +28,13 @@
 	},
 	"dependencies": {
 		"@lume/custom-attributes": "^0.2.0",
-		"solid-js": "<1.5.0"
+		"solid-js": "^1.0.0"
 	},
 	"devDependencies": {
 		"@lume/cli": "^0.10.0",
 		"five-server": "^0.3.1",
 		"lowclass": "^5.0.0",
 		"prettier": "3.0.3",
-		"solid-js": ">=1.0.0 <1.5.0",
 		"typescript": "^5.0.0"
 	},
 	"peerDependencies": {
