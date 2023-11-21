@@ -272,7 +272,6 @@ describe('element-behaviors', () => {
                 expect(five).toBeInstanceOf(Five);
                 expect(six).toBeInstanceOf(Six);
                 isDone = true;
-                console.log('Reacted to behaviors after they exist.');
                 done();
             });
         });
