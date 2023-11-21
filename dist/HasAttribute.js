@@ -1,13 +1,25 @@
-import '@lume/custom-attributes/dist/index.js';
+import '@lume/custom-attributes/dist/index.js'; // polyfills global Custom Attributes API
 import { CancelablePromise, PromiseCancellation } from './CancelablePromise.js';
 import { BehaviorMap } from './BehaviorMap.js';
+/**
+ * Defines the global `has=""` attribute for assigning behaviors to an element.
+ *
+ * One instance of this class is instantiated per element with `has=""` attribute.
+ *
+ * If you're using element-behaviors, then all elements now also have a
+ * `behaviors` property that is a map of behavior names to behavior instances.
+ */
 export class HasAttribute {
     get behaviors() {
         return this.ownerElement.behaviors;
     }
     observers = new Map();
     elementDefinedPromises = new Map();
-    isConnected = false;
+    isConnected = false; // TODO move to base class
+    // TODO an improvement would be that behaviors are instantiated on element
+    // construction, though that will add some complexity (probably patching of
+    // many native APIs). Probably needs a change in custom-attributes first so it
+    // handles attributes during element construction.
     connectedCallback() {
         this.isConnected = true;
         this.changedCallback('', this.value);
@@ -26,6 +38,8 @@ export class HasAttribute {
         }
         const currentBehaviors = this.getBehaviorNames(newVal);
         const previousBehaviors = this.getBehaviorNames(oldVal);
+        // small optimization: if no previous or new behaviors, just quit
+        // early. It would still function the same without this.
         if (currentBehaviors.length == 0 && previousBehaviors.length == 0)
             return;
         const { removed, added } = this.getDiff(previousBehaviors, currentBehaviors);
@@ -44,9 +58,14 @@ export class HasAttribute {
         };
         for (let i = 0, l = previousBehaviors.length; i < l; i += 1) {
             const oldBehavior = previousBehaviors[i];
+            // if it exists in the previousBehaviors but not the newBehaviors, then
+            // the node was removed.
             if (!diff.added.includes(oldBehavior)) {
                 diff.removed.push(oldBehavior);
             }
+            // otherwise the old value also exists in the set of new values, so
+            // therefore it wasn't added or removed, so let's remove it so we
+            // don't count it as added
             else {
                 diff.added.splice(diff.added.indexOf(oldBehavior), 1);
             }
@@ -65,9 +84,12 @@ export class HasAttribute {
             await elementBehaviors.whenDefined(name);
             Behavior = elementBehaviors.get(name);
         }
+        // TODO Read observedAttributes during the define() call instead, like
+        // custom elements.
         const observedAttributes = Behavior.observedAttributes;
         const tagName = this.ownerElement.tagName;
         try {
+            // if the element is a custom element and the behavior specifies to wait for it to be defined
             if (Behavior.awaitElementDefined && tagName.includes('-') && !customElements.get(tagName.toLowerCase())) {
                 const promiseId = name + '_' + tagName;
                 let promise = this.elementDefinedPromises.get(promiseId);
@@ -93,6 +115,7 @@ export class HasAttribute {
         catch (e) {
             if (!(e instanceof PromiseCancellation))
                 throw e;
+            // do nothing if promise canceled
         }
     }
     disconnectBehavior(name) {
@@ -103,6 +126,8 @@ export class HasAttribute {
             this.elementDefinedPromises.delete(promiseId);
         }
         const behavior = this.behaviors.get(name);
+        // There will only be a behavior if connectBehavior both created it and
+        // ran its connectedCallback.
         if (!behavior)
             return;
         behavior.disconnectedCallback?.(this.ownerElement);
@@ -116,11 +141,23 @@ export class HasAttribute {
         observer.disconnect();
         this.observers.delete(behavior);
     }
+    // Behaviors observe attribute changes, implemented with MutationObserver
+    //
+    // We have to create one observer per behavior because otherwise
+    // MutationObserver doesn't have an API for disconnecting from a single
+    // element, only for disconnecting from all elements.
     createAttributeObserver(behavior) {
         const el = this.ownerElement;
         const observer = new MutationObserver(records => {
             if (!behavior.attributeChangedCallback)
                 return;
+            // Because we get mutations in order, and we have all the attribute
+            // values for a given attribute along the way while iterating on
+            // mutation records, we keep track of previous and current attribute
+            // values (per attribute name) with this variable and thus we can
+            // fire behavior.attributeChangedCallback with each previous and
+            // current value. For why we need to do this, see
+            // https://stackoverflow.com/questions/60593551.
             let lastAttributeValues = {};
             let name = '';
             for (const record of records) {
@@ -156,7 +193,9 @@ export class HasAttribute {
         }
     }
 }
+// Avoid errors trying to use DOM APIs in non-DOM environments (f.e. server-side rendering).
 if (globalThis.window?.document) {
+    // stores the behaviors associated to each element.
     const behaviorMaps = new WeakMap();
     Object.defineProperty(Element.prototype, 'behaviors', {
         get() {

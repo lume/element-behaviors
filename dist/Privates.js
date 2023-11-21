@@ -1,3 +1,4 @@
+// TODO safe types for privates
 export function Privates() {
     const storage = new WeakMap();
     return (obj) => {

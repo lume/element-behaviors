@@ -1,10 +1,23 @@
 import type { Constructor } from 'lowclass';
 import type { BehaviorMap } from './BehaviorMap.js';
+/** A registry of behaviors. Similar to CustomElementRegistry. */
 export declare class BehaviorRegistry {
     #private;
+    /**
+     * Associate a class `Behavior` to a given behavior `name`. Any time an
+     * element has the named behavior, the given class will be instantiated and
+     * the instance will be able to apply logic to its host element.
+     */
     define<T extends PossibleBehaviorConstructor>(name: string, Behavior: T): void;
+    /** Get the behavior class associated with `name`. */
     get(name: string): PossibleBehaviorConstructor | undefined;
+    /** Returns `true` if there's a class defined for the given `name`, `false` otherwise. */
     has(name: string): boolean;
+    /**
+     * Wait for the promise returned by this to run code after a behavior class
+     * for the given `name` has been defined. If the behavior class is already
+     * defined, resolves immediately.
+     */
     whenDefined(name: string): Promise<void>;
 }
 export declare let elementBehaviors: BehaviorRegistry;

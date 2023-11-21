@@ -1,5 +1,9 @@
 import { createEffect } from 'solid-js';
-import './index.js';
+import './index.js'; // adds elementBehaviors to global
+// This test is here, not tested with global tests because the createEffect
+// otherwise seems to be from a duplicate solid-js lib during testing, hence is
+// fails to be reactive.
+// TODO update @lume/cli so that we can prevent duplicate solid-js libs.
 describe('element-behaviors', () => {
     it('exposes the library globally', () => {
         expect(elementBehaviors).toBeInstanceOf(Object);
@@ -13,6 +17,7 @@ describe('element-behaviors', () => {
         }
         elementBehaviors.define('foo', Foo);
         expect(elementBehaviors.has('foo')).toBe(true);
+        // disallows duplicates
         expect(() => elementBehaviors.define('foo', Foo)).toThrow();
         const _Foo = elementBehaviors.get('foo');
         expect(_Foo).toBe(Foo);
@@ -52,7 +57,11 @@ describe('element-behaviors', () => {
         }
         elementBehaviors.define('awesomeness', Awesomeness);
         document.body.append(div);
+        // give the div element awesomeness
         div.setAttribute('has', 'awesomeness');
+        // TODO try similar things with Custom Elements, and see if they need or
+        // don't need similar setTimeout deferrals, and make sure
+        // element-behaviors follows the same behavior.
         await new Promise(r => setTimeout(r));
         expect(constructCount).toBe(1);
         expect(connectedCount).toBe(1);
@@ -63,6 +72,7 @@ describe('element-behaviors', () => {
         div.removeAttribute('foo');
         await new Promise(r => setTimeout(r));
         expect(attrChangedCount).toBe(5, 'expected attributeChangedCallback to be called 4 times');
+        // prettier-ignore
         expect(attrChangedArgs).toEqual([
             'foo', null, '0',
             'foo', '0', '1',
@@ -121,7 +131,11 @@ describe('element-behaviors', () => {
         }
         elementBehaviors.define('shine', Shine);
         root.append(div);
+        // give the div element shine
         div.setAttribute('has', 'shine');
+        // TODO try similar things with Custom Elements, and see if they need or
+        // don't need similar setTimeout deferrals, and make sure
+        // element-behaviors follows the same behavior.
         await new Promise(r => setTimeout(r));
         expect(connectedCount).toBe(1);
         await new Promise(r => setTimeout(r));
@@ -131,6 +145,7 @@ describe('element-behaviors', () => {
         div.removeAttribute('foo');
         await new Promise(r => setTimeout(r));
         expect(attrChangedCount).toBe(5, 'expected attributeChangedCallback to be called 4 times');
+        // prettier-ignore
         expect(attrChangedArgs).toEqual([
             'foo', null, '0',
             'foo', '0', '1',
@@ -153,13 +168,15 @@ describe('element-behaviors', () => {
             class Three {
             }
             elementBehaviors.define('three', Three);
-            document.body.innerHTML = `
+            document.body.innerHTML = /*html*/ `
 				<div has="one two three"></div>
 			`;
             const div = document.body.firstElementChild;
+            // Defer so that MutationObserver has a chance to fire first.
             await new Promise(r => setTimeout(r));
             expect(div.behaviors.size).toBe(3);
             div.setAttribute('has', 'one three');
+            // Defer so that MutationObserver has a chance to fire first.
             await new Promise(r => setTimeout(r));
             expect(div.behaviors.size).toBe(2);
             expect(div.behaviors.has('one')).toEqual(true);
@@ -179,20 +196,20 @@ describe('element-behaviors', () => {
             });
             let nonWaitingBehaviorConnected = false;
             elementBehaviors.define('does-not-wait', class DoesNotWait {
-                static awaitElementDefined = false;
+                static awaitElementDefined = false; // This is the default
                 connectedCallback() {
                     nonWaitingBehaviorConnected = true;
                 }
             });
-            document.body.innerHTML = `
+            document.body.innerHTML = /*html*/ `
 				<some-element has="wait-for-element-defined does-not-wait"></some-element>
 			`;
-            await new Promise(r => setTimeout(r));
+            await new Promise(r => setTimeout(r)); // wait for MutationObservers
             expect(waitingBehaviorConnected).toEqual(false);
             expect(nonWaitingBehaviorConnected).toEqual(true);
             customElements.define('some-element', class extends HTMLElement {
             });
-            await new Promise(r => setTimeout(r));
+            await new Promise(r => setTimeout(r)); // wait for MutationObservers
             expect(waitingBehaviorConnected).toEqual(true);
             expect(nonWaitingBehaviorConnected).toEqual(true);
         });
@@ -204,16 +221,18 @@ describe('element-behaviors', () => {
                     waitingBehaviorConnected = true;
                 }
             });
-            document.body.innerHTML = `
+            document.body.innerHTML = /*html*/ `
 				<some-element-2 has="wait-for-element-defined-2"></some-element-2>
 			`;
             const someEl = document.body.firstElementChild;
-            await new Promise(r => setTimeout(r));
+            await new Promise(r => setTimeout(r)); // wait for MutationObservers
             expect(waitingBehaviorConnected).toEqual(false);
+            // remove before defining
             someEl.remove();
             customElements.define('some-element-2', class extends HTMLElement {
             });
-            await new Promise(r => setTimeout(r));
+            await new Promise(r => setTimeout(r)); // wait for MutationObservers
+            // behavior will not erroneously be connected after awaiting the element definition
             expect(waitingBehaviorConnected).toEqual(false);
         });
     });
@@ -228,12 +247,20 @@ describe('element-behaviors', () => {
             class Six {
             }
             elementBehaviors.define('six', Six);
-            document.body.innerHTML = `
+            document.body.innerHTML = /*html*/ `
 				<div has="four five six"></div>
 			`;
             const div = document.body.firstElementChild;
             let isDone = false;
+            // .behaviors is reactive, useful in Solid effects
             createEffect(() => {
+                // TODO INVESTIGATE: The effect runs two more times than expected,
+                // and so we guard against that using the isDone variable, otherwise
+                // the test will fail saying that done() was called too many times.
+                // It might have to do with what .behaviors is doing.
+                //
+                // In practice, the extra runs are fine if state is declarative, but
+                // we want to be efficient.
                 if (isDone)
                     return;
                 const four = div.behaviors.get('four');

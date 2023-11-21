@@ -7,6 +7,7 @@ export class CancelablePromise extends Promise {
     constructor(executor, options) {
         const rejectOnCancel = options ? options.rejectOnCancel : false;
         let originalReject;
+        // if the first arg is a promise-like
         if (executor instanceof Promise) {
             const promise = executor;
             super((resolve, reject) => {

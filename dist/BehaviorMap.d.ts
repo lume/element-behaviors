@@ -1,4 +1,9 @@
 import type { PossibleBehaviorInstance } from './BehaviorRegistry.js';
+/**
+ * A map of behavior names to their defined classes.
+ *
+ * Reactive in Solid.js.
+ */
 export declare class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
     #private;
     find(predicate: (name: string, behavior: PossibleBehaviorInstance) => boolean): PossibleBehaviorInstance | undefined;
