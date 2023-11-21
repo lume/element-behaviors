@@ -382,7 +382,6 @@ describe('element-behaviors', () => {
 				expect(six).toBeInstanceOf(Six)
 
 				isDone = true
-				console.log('Reacted to behaviors after they exist.')
 				done()
 			})
 		})
