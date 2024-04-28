@@ -1,1 +1,1 @@
-{"version":3,"file":"attribute-types.d.ts","sourceRoot":"","sources":["../src/attribute-types.ts"],"names":[],"mappings":"AAEA,OAAO,QAAQ,UAAU,CAAC;IACzB,UAAU,GAAG,CAAC;QACb,UAAU,gBAAgB,CAAC,CAAC;YAC3B,GAAG,CAAC,EAAE,MAAM,CAAA;SACZ;KACD;CACD"}
+{"version":3,"file":"attribute-types.d.ts","sourceRoot":"","sources":["../src/attribute-types.ts"],"names":[],"mappings":"AAKA,OAAO,QAAQ,UAAU,CAAC;IACzB,UAAU,GAAG,CAAC;QACb,UAAU,gBAAgB,CAAC,CAAC;YAC3B,GAAG,CAAC,EAAE,MAAM,CAAA;SACZ;KACD;CACD"}
