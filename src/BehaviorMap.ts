@@ -18,6 +18,8 @@ export class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
 	find(predicate: (name: string, behavior: PossibleBehaviorInstance) => boolean) {
 		let result: PossibleBehaviorInstance | undefined = void undefined
 
+		// Note, this for-of loop accesses Symbol.iterator which makes find()
+		// reactive.
 		for (const [name, behavior] of this) {
 			if (!predicate(name, behavior)) continue
 			result = behavior
