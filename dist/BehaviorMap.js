@@ -13,6 +13,8 @@ export class BehaviorMap extends Map {
     #reactivityTriggerObject = createMutable({});
     find(predicate) {
         let result = void undefined;
+        // Note, this for-of loop accesses Symbol.iterator which makes find()
+        // reactive.
         for (const [name, behavior] of this) {
             if (!predicate(name, behavior))
                 continue;
