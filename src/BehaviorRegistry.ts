@@ -1,4 +1,4 @@
-import type {Constructor} from 'lowclass'
+import type {Constructor} from 'lowclass/dist/Constructor.js'
 import type {BehaviorMap} from './BehaviorMap.js'
 
 /** A registry of behaviors. Similar to CustomElementRegistry. */
