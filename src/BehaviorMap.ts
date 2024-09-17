@@ -76,7 +76,7 @@ export class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
 		return super.has(key)
 	}
 
-	override entries(): IterableIterator<[string, PossibleBehaviorInstance]> {
+	override entries(): MapIterator<[string, PossibleBehaviorInstance]> {
 		// track all properties in a Solid effect
 		// @ts-expect-error
 		this.#reactivityTriggerObject[$TRACK]
@@ -84,7 +84,7 @@ export class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
 		return super.entries()
 	}
 
-	override [Symbol.iterator](): IterableIterator<[string, PossibleBehaviorInstance]> {
+	override [Symbol.iterator](): MapIterator<[string, PossibleBehaviorInstance]> {
 		// track all properties in a Solid effect
 		// @ts-expect-error
 		this.#reactivityTriggerObject[$TRACK]
@@ -103,7 +103,7 @@ export class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
 		super.forEach(callbackfn, thisArg)
 	}
 
-	override keys(): IterableIterator<string> {
+	override keys(): MapIterator<string> {
 		// track all properties in a Solid effect
 		// @ts-expect-error
 		this.#reactivityTriggerObject[$TRACK]

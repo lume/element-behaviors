@@ -12,10 +12,10 @@ export declare class BehaviorMap extends Map<string, PossibleBehaviorInstance> {
     delete(key: string): boolean;
     clear(): void;
     has(key: string): boolean;
-    entries(): IterableIterator<[string, PossibleBehaviorInstance]>;
-    [Symbol.iterator](): IterableIterator<[string, PossibleBehaviorInstance]>;
+    entries(): MapIterator<[string, PossibleBehaviorInstance]>;
+    [Symbol.iterator](): MapIterator<[string, PossibleBehaviorInstance]>;
     forEach(callbackfn: (value: PossibleBehaviorInstance, key: string, map: Map<string, PossibleBehaviorInstance>) => void, thisArg?: any): void;
-    keys(): IterableIterator<string>;
+    keys(): MapIterator<string>;
     get size(): number;
     set size(n: number);
 }
