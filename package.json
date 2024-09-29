@@ -31,9 +31,9 @@
 		"solid-js": "^1.0.0"
 	},
 	"devDependencies": {
-		"@lume/cli": "^0.11.0",
+		"@lume/cli": "^0.13.0",
 		"five-server": "^0.3.1",
-		"lowclass": "^7.0.0",
+		"lowclass": "^8.0.0",
 		"prettier": "3.0.3",
 		"typescript": "^5.0.0"
 	},
