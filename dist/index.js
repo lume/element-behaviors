@@ -6,5 +6,5 @@ export * from './BehaviorRegistry.js';
 export * from './HasAttribute.js';
 // Leave this last line alone, it gets automatically updated when publishing a
 // new version of this package.
-export const version = '5.0.3';
+export const version = '5.0.4';
 //# sourceMappingURL=index.js.map
