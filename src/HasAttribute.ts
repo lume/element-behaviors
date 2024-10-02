@@ -74,7 +74,7 @@ export class HasAttribute implements CustomAttribute {
 		}
 
 		for (let i = 0, l = previousBehaviors.length; i < l; i += 1) {
-			const oldBehavior = previousBehaviors[i]
+			const oldBehavior = previousBehaviors[i]!
 
 			// if it exists in the previousBehaviors but not the newBehaviors, then
 			// the node was removed.
@@ -205,7 +205,7 @@ export class HasAttribute implements CustomAttribute {
 					continue
 				}
 
-				behavior.attributeChangedCallback(name, lastAttributeValues[name], record.oldValue, this.ownerElement)
+				behavior.attributeChangedCallback(name, lastAttributeValues[name]!, record.oldValue, this.ownerElement)
 
 				lastAttributeValues[name] = record.oldValue
 			}
@@ -216,7 +216,7 @@ export class HasAttribute implements CustomAttribute {
 				attr = el.attributes.getNamedItem(name)
 				behavior.attributeChangedCallback(
 					name,
-					lastAttributeValues[name],
+					lastAttributeValues[name]!,
 					attr === null ? null : attr.value,
 					this.ownerElement,
 				)
